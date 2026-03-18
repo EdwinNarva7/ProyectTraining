@@ -41,7 +41,7 @@
     </div>
 
     <!-- Form Card -->
-    <form action="{{ route('admin.users.update', $user) }}" method="POST">
+    <form action="{{ route('admin.users.update', $user) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -61,6 +61,31 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Profile Photo -->
+                    <div class="md:col-span-2">
+                        <label for="profile_photo" class="block text-sm font-medium text-gray-700 mb-2">
+                            Foto de Perfil
+                        </label>
+                        <div class="flex items-center gap-4">
+                            <div id="photo-preview" class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center border-2 border-dashed border-slate-200 overflow-hidden group">
+                                @if($user->profile_photo_path)
+                                    <img src="{{ Storage::url($user->profile_photo_path) }}" class="w-full h-full object-cover">
+                                @else
+                                    <i class="fas fa-camera text-2xl text-slate-300 group-hover:scale-110 transition-transform"></i>
+                                @endif
+                            </div>
+                            <div class="flex-1">
+                                <input type="file" name="profile_photo" id="profile_photo" accept="image/*"
+                                    class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-sena file:text-white hover:file:bg-sena-dark transition-all"
+                                    onchange="previewImage(this)">
+                                <p class="mt-2 text-xs text-gray-500 italic">Formatos permitidos: JPG, PNG, WEBP. Máximo 2MB.</p>
+                            </div>
+                        </div>
+                        @error('profile_photo')
+                            <p class="mt-1 text-sm text-red-600 font-bold uppercase tracking-widest">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Role -->
                     <div>
                         <label for="role_id" class="block text-sm font-medium text-gray-700 mb-2">
@@ -240,6 +265,35 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Phase Selection -->
+                    <div>
+                        <label for="phase_id" class="block text-sm font-medium text-gray-700 mb-2">
+                            Fase del Aprendiz <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                                    </path>
+                                </svg>
+                            </div>
+                            <select name="phase_id" id="phase_id"
+                                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('phase_id') border-red-300 focus:ring-red-500 @enderror">
+                                <option value="">Seleccione una fase</option>
+                                @foreach($phases as $phase)
+                                    <option value="{{ $phase->id }}" 
+                                        {{ (old('phase_id', $user->apprenticeProfile?->phase_id) == $phase->id) ? 'selected' : '' }}>
+                                        {{ $phase->name }} {{ $phase->is_active ? '(ACTUAL)' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('phase_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Document Number -->
                     <div>
                         <label for="document_number" class="block text-sm font-medium text-gray-700 mb-2">
@@ -392,6 +446,19 @@
             roleSelect.addEventListener('change', toggleApprenticeFields);
             toggleApprenticeFields(); // Execute on page load
         });
+
+        function previewImage(input) {
+            const preview = document.getElementById('photo-preview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                    preview.classList.remove('bg-slate-100');
+                    preview.classList.add('border-sena');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
 
         // Toggle password visibility
         function togglePasswordVisibility(inputId, iconId) {

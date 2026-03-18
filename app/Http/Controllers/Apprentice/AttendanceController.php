@@ -217,10 +217,10 @@ class AttendanceController extends Controller
                 $scheduledStart = Carbon::today()->setTimeFrom($todaySchedule->start_time);
                 $scheduledEnd = Carbon::today()->setTimeFrom($todaySchedule->end_time);
 
-                if ($now->lt($scheduledStart)) {
+                if ($now->lt($scheduledStart->copy()->subMinutes(30))) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Aún no es hora de iniciar jornada. Tu horario empieza a las ' . $scheduledStart->format('H:i') . '.'
+                        'message' => 'Aún es muy temprano. Tu horario empieza a las ' . $scheduledStart->format('H:i') . '.'
                     ], 400);
                 }
 
@@ -235,7 +235,7 @@ class AttendanceController extends Controller
                 $scheduledStart = Carbon::today()->setTimeFrom($recoverySession->scheduled_start_time);
                 $scheduledEnd = Carbon::today()->setTimeFrom($recoverySession->scheduled_end_time);
 
-                if ($now->lt($scheduledStart->copy()->subMinutes(5))) { // Pequeño margen de 5 minutos antes
+                if ($now->lt($scheduledStart->copy()->subMinutes(15))) { // Pequeño margen de 15 minutos antes 
                     return response()->json([
                         'success' => false,
                         'message' => 'Aún no es hora de iniciar tu recuperación. Debes esperar al horario establecido por el administrador (' . $scheduledStart->format('H:i') . ').'
@@ -285,10 +285,23 @@ class AttendanceController extends Controller
                 'created_by' => $user->id,
             ]);
 
+            $effectiveStart = $now->copy();
+            if ($todaySchedule) {
+                $scheduledStart = Carbon::today()->setTimeFrom($todaySchedule->start_time);
+                if ($now->lt($scheduledStart)) {
+                    $effectiveStart = $scheduledStart;
+                }
+            } elseif ($recoverySession) {
+                $scheduledStart = Carbon::today()->setTimeFrom($recoverySession->scheduled_start_time);
+                if ($now->lt($scheduledStart)) {
+                    $effectiveStart = $scheduledStart;
+                }
+            }
+
             // Crear nueva sesión
             AttendanceSession::create([
                 'apprentice_id' => $user->id,
-                'start_at' => $now,
+                'start_at' => $effectiveStart,
             ]);
 
             DB::commit();
@@ -523,7 +536,7 @@ class AttendanceController extends Controller
             return [
                 'status' => 'active',
                 'start_time' => $activeSession->start_at,
-                'duration' => $now->diffInMinutes($activeSession->start_at),
+                'duration' => $now->gt($activeSession->start_at) ? $now->diffInMinutes($activeSession->start_at) : 0,
                 'scheduled_end' => $scheduledEnd
             ];
         }

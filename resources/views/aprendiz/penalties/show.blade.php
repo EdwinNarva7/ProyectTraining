@@ -178,7 +178,7 @@
                             </div>
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Fecha Programada (Fines de Semana)</label>
+                                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Fecha Programada</label>
                                     <input type="date" id="requested_date" class="w-full px-6 py-4 bg-white border-2 border-slate-100 rounded-2xl text-sm font-bold focus:border-indigo-500 outline-none transition-all shadow-sm">
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
@@ -210,6 +210,10 @@
                         const totalHours = h + (m / 60);
 
                         if (!date) { Swal.showValidationMessage('Selecciona una fecha válida'); return false; }
+                        // Validar que la fecha no sea en el pasado
+                        const selectedDate = new Date(date + 'T00:00:00');
+                        const today = new Date(); today.setHours(0,0,0,0);
+                        if (selectedDate < today) { Swal.showValidationMessage('La fecha no puede ser anterior a hoy'); return false; }
                         if (totalHours <= 0) { Swal.showValidationMessage('El tiempo debe ser mayor a 0'); return false; }
                         if (totalHours > maxHours + 0.05) { Swal.showValidationMessage(`Excediste el tope de ${initialHours}h ${initialMinutes}m`); return false; }
 

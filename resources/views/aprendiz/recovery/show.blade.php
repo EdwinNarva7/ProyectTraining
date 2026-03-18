@@ -12,8 +12,10 @@
 
 @section('content')
     @php
-        $requiredMinutes = $session->recoveryRequest->hours_requested * 60;
-        $scheduledEnd = Carbon\Carbon::parse($session->start_time)->addMinutes($requiredMinutes);
+        $scheduledStartDT = \Carbon\Carbon::parse($session->date)->setTimeFrom($session->scheduled_start_time);
+        $scheduledEndDT = \Carbon\Carbon::parse($session->date)->setTimeFrom($session->scheduled_end_time);
+        $requiredMinutes = $scheduledStartDT->diffInMinutes($scheduledEndDT);
+        $scheduledEnd = $scheduledEndDT;
     @endphp
 
     <div class="max-w-5xl mx-auto space-y-10 animate-fade-in pb-12">
@@ -26,10 +28,10 @@
                 <div class="mb-10 flex flex-col items-center">
                     <div class="relative">
                         <div class="absolute inset-0 bg-emerald-400 blur-2xl opacity-20 animate-pulse"></div>
-                        <span
-                            class="relative inline-flex items-center gap-3 px-6 py-2.5 bg-emerald-50 text-sena rounded-full text-[10px] font-black uppercase tracking-[0.3em] border border-emerald-100 shadow-sm">
-                            <span class="w-2.5 h-2.5 bg-sena rounded-full animate-ping"></span>
-                            CRONÓMETRO DE RECTIFICACIÓN
+                        <span id="status-pill"
+                            class="relative inline-flex items-center gap-3 px-6 py-2.5 bg-emerald-50 text-sena rounded-full text-[10px] font-black uppercase tracking-[0.3em] border border-emerald-100 shadow-sm transition-colors duration-500">
+                            <span id="status-dot" class="w-2.5 h-2.5 bg-sena rounded-full animate-ping"></span>
+                            <span id="status-text">CRONÓMETRO DE RECTIFICACIÓN</span>
                         </span>
                     </div>
                 </div>
@@ -42,7 +44,7 @@
                             OPERATIVO:</span>
                         <span
                             class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-100 italic">
-                            {{ number_format($session->recoveryRequest->hours_requested, 1) }} HORAS DE COMPENSACIÓN
+                            {{ $requiredMinutes }} MINUTOS DE COMPENSACIÓN
                         </span>
                     </div>
                 </div>
@@ -159,9 +161,9 @@
                 <h4 class="text-rose-500 font-black text-sm uppercase tracking-widest leading-none mb-2">Protocolo de
                     Cumplimiento Estricto</h4>
                 <p class="text-slate-400 text-[11px] font-bold uppercase tracking-widest leading-relaxed opacity-70">
-                    El sistema invalidará la sesión si se detecta inactividad o cierre prematuro antes de completar las
-                    <span class="text-white font-black">{{ number_format($session->recoveryRequest->hours_requested, 1) }}
-                        HORAS</span> pactadas inicialmente.
+                    El sistema invalidará la sesión si se detecta inactividad o cierre prematuro antes de completar los
+                    <span class="text-white font-black">{{ $requiredMinutes }}
+                        MINUTOS</span> pactados inicialmente.
                 </p>
             </div>
         </div>
@@ -218,7 +220,32 @@
 
             function updateTimer() {
                 const now = new Date().getTime();
-                const distance = now - startTime;
+                let distance = now - startTime;
+
+                let isWaiting = false;
+                let isComplete = false;
+
+                if (distance < 0) {
+                    distance = 0;
+                    isWaiting = true;
+                } else if (distance >= requiredMillis) {
+                    distance = requiredMillis;
+                    isComplete = true;
+                }
+
+                if (isWaiting) {
+                    document.getElementById('status-text').innerText = 'EN ESPERA...';
+                    document.getElementById('status-pill').className = 'relative inline-flex items-center gap-3 px-6 py-2.5 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-[0.3em] border border-amber-100 shadow-sm transition-colors duration-500';
+                    document.getElementById('status-dot').className = 'w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping';
+                } else if (isComplete) {
+                    document.getElementById('status-text').innerText = 'MISIÓN COMPLETADA - TERMINAR';
+                    document.getElementById('status-pill').className = 'relative inline-flex items-center gap-3 px-6 py-2.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-[0.3em] border border-indigo-100 shadow-sm transition-colors duration-500';
+                    document.getElementById('status-dot').className = 'w-2.5 h-2.5 bg-indigo-500 rounded-full';
+                } else {
+                    document.getElementById('status-text').innerText = 'CRONÓMETRO DE RECTIFICACIÓN';
+                    document.getElementById('status-pill').className = 'relative inline-flex items-center gap-3 px-6 py-2.5 bg-emerald-50 text-sena rounded-full text-[10px] font-black uppercase tracking-[0.3em] border border-emerald-100 shadow-sm transition-colors duration-500';
+                    document.getElementById('status-dot').className = 'w-2.5 h-2.5 bg-sena rounded-full animate-ping';
+                }
 
                 const hours = Math.floor(distance / (1000 * 60 * 60));
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));

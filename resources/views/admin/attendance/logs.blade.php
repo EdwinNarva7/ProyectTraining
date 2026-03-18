@@ -145,12 +145,16 @@
                             <tr class="hover:bg-slate-50/40 transition-all group/item">
                                 <td class="px-10 py-6">
                                     <div class="flex items-center gap-5">
-                                        <div class="w-12 h-12 sena-gradient rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-md group-hover/item:scale-110 transition-transform shrink-0 border-2 border-white">
-                                            @php
-                                                $nameParts = explode(' ', $log->apprentice?->full_name ?? 'A A');
-                                                $initials = strtoupper(substr($nameParts[0],0,1) . (isset($nameParts[1]) ? substr($nameParts[1],0,1) : ''));
-                                            @endphp
-                                            {{ $initials }}
+                                        <div class="w-12 h-12 sena-gradient rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-md group-hover/item:scale-110 transition-transform shrink-0 border-2 border-white overflow-hidden">
+                                            @if($log->apprentice?->profile_photo_path)
+                                                <img src="{{ Storage::url($log->apprentice->profile_photo_path) }}" class="w-full h-full object-cover">
+                                            @else
+                                                @php
+                                                    $nameParts = explode(' ', $log->apprentice?->full_name ?? 'A A');
+                                                    $initials = strtoupper(substr($nameParts[0],0,1) . (isset($nameParts[1]) ? substr($nameParts[1],0,1) : ''));
+                                                @endphp
+                                                {{ $initials }}
+                                            @endif
                                         </div>
                                         <div>
                                             <div class="font-bold text-slate-800 text-sm tracking-tight mb-0.5">{{ $log->apprentice?->full_name ?? 'Aprendiz Desconocido' }}</div>

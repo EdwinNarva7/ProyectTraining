@@ -35,6 +35,45 @@
             ring-color: #39A900;
             border-color: #39A900;
         }
+
+        @keyframes zoom-in {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-zoom-in { animation: zoom-in 0.3s ease-out; }
+
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
+
+        .fp-pulse {
+            animation: fp-pulse 2s infinite;
+        }
+
+        @keyframes fp-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(57, 169, 0, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(57, 169, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(57, 169, 0, 0); }
+        }
+
+        @keyframes scan-line {
+            0% { top: 0%; opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .scan-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(57, 169, 0, 0.8);
+            box-shadow: 0 0 15px rgba(57, 169, 0, 0.8);
+            animation: scan-line 2s infinite linear;
+            z-index: 20;
+        }
     </style>
 </head>
 
@@ -75,9 +114,6 @@
                     <h1 class="text-4xl font-bold text-slate-900 mb-3 tracking-tight">
                         Bienvenido de nuevo<span class="text-[#39A900]">.</span>
                     </h1>
-                    <p class="text-slate-500 text-sm">
-                        Ingresa tus credenciales para acceder al sistema de control de aprendices.
-                    </p>
                 </div>
 
                 <!-- Session Status -->
@@ -175,8 +211,34 @@
                         </p>
                     @endif
                 </form>
+
+                <!-- Separator -->
+                <div class="relative my-8">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-slate-200"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-slate-50 text-slate-500 font-medium">¿Prefieres acceso biométrico?</span>
+                    </div>
+                </div>
+
+                <!-- Botón de Ingreso Biométrico -->
+                <a href="{{ route('biometric.panel') }}"
+                    class="flex items-center justify-center gap-3 w-full py-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-[#39A900]/20 hover:border-[#39A900]/50 rounded-2xl transition-all duration-300 hover:shadow-lg active:scale-[0.98] group">
+                    <div class="w-10 h-10 rounded-xl bg-[#39A900]/10 flex items-center justify-center text-[#39A900] group-hover:bg-[#39A900] group-hover:text-white transition-all">
+                        <i class="fas fa-fingerprint text-base"></i>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider leading-none">Alternativa</p>
+                        <p class="text-[#39A900] font-bold text-base leading-none group-hover:text-[#2d8500]">Ingreso Biométrico</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-[#39A900] ml-auto opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                </a>
             </div>
         </div>
+
+        <!-- Modal de Escaneo de Huella - Estética Industrial -->
+        <!-- REMOVIDO: Modal de biometría ahora está en biometric-login.blade.php -->
 
         <!-- Columna Derecha - Imagen Visual -->
         <div class="hidden lg:block lg:w-1/2 relative">
@@ -219,7 +281,10 @@
         </div>
     </div>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Toggle para mostrar/ocultar contraseña
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const eyeIcon = document.getElementById('eye-icon');
@@ -235,19 +300,15 @@
     </script>
     <style>
         @keyframes bounce-slow {
-
-            0%,
-            100% {
+            0%, 100% {
                 transform: translateY(-5%);
                 animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
             }
-
             50% {
                 transform: none;
                 animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
             }
         }
-
         .animate-bounce-slow {
             animation: bounce-slow 4s infinite;
         }

@@ -9,6 +9,53 @@
 @endsection
 
 @section('content')
+    <!-- Phase Info Banner -->
+    @if($activePhase)
+        <div class="mb-8 bg-white p-6 rounded-3xl shadow-sm border border-sena/20 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden group">
+            <div class="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-sena/5 rounded-full blur-3xl group-hover:bg-sena/10 transition-colors"></div>
+            <div class="flex items-center gap-6 z-10">
+                <div class="w-16 h-16 sena-gradient rounded-2xl flex items-center justify-center shadow-lg shadow-sena/20 shrink-0">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-3 mb-1">
+                        <h2 class="text-2xl font-bold text-slate-800 font-outfit">Fase Activa: {{ $activePhase->name }}</h2>
+                        <span class="px-3 py-1 bg-sena/10 text-sena text-[10px] font-bold uppercase tracking-widest rounded-full border border-sena/20">En Curso</span>
+                    </div>
+                    <p class="text-slate-500 text-sm">Gestionando actualmente {{ $stats['total_apprentices'] }} aprendices en esta cohorte.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 z-10">
+                <div class="text-right hidden md:block">
+                    <p class="text-[10px] uppercase text-slate-400 font-bold tracking-widest mb-1">Período de la Fase</p>
+                    <p class="text-sm font-bold text-slate-700">
+                        {{ $activePhase->start_date ? \Carbon\Carbon::parse($activePhase->start_date)->format('d M, Y') : 'N/A' }} 
+                        - 
+                        {{ $activePhase->end_date ? \Carbon\Carbon::parse($activePhase->end_date)->format('d M, Y') : 'N/A' }}
+                    </p>
+                </div>
+                <a href="{{ route('admin.phases.index') }}" class="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-slate-200 uppercase tracking-widest">Cambiar Fase</a>
+            </div>
+        </div>
+    @else
+        <div class="mb-8 bg-white p-6 rounded-3xl shadow-sm border border-amber-200 flex items-center justify-between gap-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">No hay una fase activa seleccionada</h2>
+                    <p class="text-slate-500 text-sm">Debes activar una fase para filtrar las estadísticas correctamente.</p>
+                </div>
+            </div>
+            <a href="{{ route('admin.phases.index') }}" class="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-all uppercase tracking-widest">Gestionar Fases</a>
+        </div>
+    @endif
+
     <!-- Welcome Banner/Stats -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Usuarios -->

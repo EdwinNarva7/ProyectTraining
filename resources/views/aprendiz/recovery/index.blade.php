@@ -130,7 +130,7 @@
                             </div>
                             <div class="space-y-2">
                                 <h3 class="text-2xl font-black text-slate-800 font-outfit uppercase tracking-tighter">Sin jornadas activas</h3>
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] max-w-sm mx-auto leading-relaxed">Tus deudas aprobadas para compensación fin de semana se listarán aquí.</p>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] max-w-sm mx-auto leading-relaxed">Tus jornadas de recuperación aprobadas se listarán aquí.</p>
                             </div>
                         </div>
                     @endforelse
@@ -143,33 +143,6 @@
 
             {{-- Info Sidebar --}}
             <div class="xl:col-span-4 space-y-8">
-                
-                {{-- Steps Card --}}
-                <div class="bg-slate-900 rounded-[3.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
-                    <h3 class="text-sm font-black text-indigo-300 uppercase tracking-[0.3em] mb-10 text-center">Protocolo de Operación</h3>
-                    <div class="space-y-12 relative">
-                        <div class="absolute left-6 top-6 bottom-6 w-px bg-white/10"></div>
-                        
-                        <div class="relative pl-16">
-                            <div class="absolute left-3.5 top-0 w-5 h-5 bg-sena rounded-lg flex items-center justify-center text-[10px] font-black shadow-lg shadow-sena/30 group-hover:rotate-45 transition-transform">1</div>
-                            <h4 class="text-xs font-black uppercase tracking-widest mb-1">Apertura</h4>
-                            <p class="text-[10px] text-slate-400 leading-relaxed font-bold uppercase opacity-80">Al registrarte hoy, presiona "Iniciar Sesión" para habilitar el temporizador oficial.</p>
-                        </div>
-
-                        <div class="relative pl-16">
-                            <div class="absolute left-3.5 top-0 w-5 h-5 bg-indigo-500 rounded-lg flex items-center justify-center text-[10px] font-black shadow-lg shadow-indigo-500/30 group-hover:rotate-45 transition-transform">2</div>
-                            <h4 class="text-xs font-black uppercase tracking-widest mb-1">Sincronización</h4>
-                            <p class="text-[10px] text-slate-400 leading-relaxed font-bold uppercase opacity-80">El sistema monitoreará tu presencia en tiempo real hasta completar el bloque asignado.</p>
-                        </div>
-
-                        <div class="relative pl-16">
-                            <div class="absolute left-3.5 top-0 w-5 h-5 bg-rose-500 rounded-lg flex items-center justify-center text-[10px] font-black shadow-lg shadow-rose-500/30 group-hover:rotate-45 transition-transform">3</div>
-                            <h4 class="text-xs font-black uppercase tracking-widest mb-1">Cierre</h4>
-                            <p class="text-[10px] text-slate-400 leading-relaxed font-bold uppercase opacity-80">Una vez cumplido el horario, el sistema cerrará la sesión y actualizará tu estatus.</p>
-                        </div>
-                    </div>
-                    <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-sena/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
-                </div>
 
                 {{-- Pro Tip --}}
                 <div class="bg-indigo-50 rounded-[3rem] p-10 border border-indigo-100 group hover:bg-indigo-100 transition-colors">

@@ -43,8 +43,12 @@
                                 <div class="flex items-center gap-4">
                                     <div class="flex-shrink-0 h-11 w-11">
                                         <div
-                                            class="h-11 w-11 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold text-base shadow-sena shadow-md group-hover/item:scale-110 group-hover/item:rotate-3 transition-transform">
-                                            {{ strtoupper(substr($session->apprentice?->name ?? 'A', 0, 1)) }}
+                                            class="h-11 w-11 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold text-base shadow-sena shadow-md group-hover/item:scale-110 group-hover/item:rotate-3 transition-transform overflow-hidden">
+                                            @if($session->apprentice?->profile_photo_path)
+                                                <img src="{{ Storage::url($session->apprentice->profile_photo_path) }}" class="w-full h-full object-cover">
+                                            @else
+                                                {{ strtoupper(substr($session->apprentice?->name ?? 'A', 0, 1)) }}
+                                            @endif
                                         </div>
                                     </div>
                                     <div>

@@ -60,6 +60,19 @@
                     </select>
                 </div>
 
+                <div class="flex-1 w-full">
+                    <label
+                        class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Fase</label>
+                    <select name="phase_id"
+                        class="form-input-tailwind w-full pl-5 pr-10 py-3 rounded-2xl bg-slate-50/50 border-slate-100 appearance-none cursor-pointer">
+                        @foreach($phases as $phase)
+                            <option value="{{ $phase->id }}" {{ (request('phase_id') == $phase->id) ? 'selected' : '' }}>
+                                {{ $phase->name }} {{ $phase->is_active ? '(Activa)' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div class="flex gap-3">
                     <button type="submit"
                         class="sena-gradient hover:opacity-90 text-white font-bold px-8 py-3.5 rounded-2xl transition-all shadow-sena shadow-md">
@@ -91,7 +104,7 @@
                         <th class="px-8 py-5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                             Estado</th>
                         <th class="px-8 py-5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-                            Ficha</th>
+                            Ficha / Fase</th>
                         <th class="px-8 py-5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                             Creado</th>
                         <th class="px-8 py-5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
@@ -106,8 +119,12 @@
                                 <div class="flex items-center gap-4">
                                     <div class="flex-shrink-0 h-12 w-12">
                                         <div
-                                            class="h-12 w-12 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold text-lg shadow-sena shadow-md group-hover/item:scale-110 group-hover/item:rotate-3 transition-transform">
-                                            {{ strtoupper(substr($user->full_name, 0, 1)) }}{{ strtoupper(substr(strrchr($user->full_name, " ") ?: " ", 1, 1)) }}
+                                            class="h-12 w-12 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold text-lg shadow-sena shadow-md group-hover/item:scale-110 group-hover/item:rotate-3 transition-transform overflow-hidden">
+                                            @if($user->profile_photo_path)
+                                                <img src="{{ Storage::url($user->profile_photo_path) }}" class="w-full h-full object-cover">
+                                            @else
+                                                {{ strtoupper(substr($user->full_name, 0, 1)) }}{{ strtoupper(substr(strrchr($user->full_name, " ") ?: " ", 1, 1)) }}
+                                            @endif
                                         </div>
                                     </div>
                                     <div>
@@ -157,14 +174,18 @@
                                 @endif
                             </td>
 
-                            <!-- Ficha -->
+                            <!-- Ficha / Fase -->
                             <td class="px-8 py-6">
-                                <div class="text-sm font-bold text-slate-700">
-                                    {{ $user->apprenticeProfile?->cohort ?? '-' }}
-                                </div>
-                                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                                    {{ $user->apprenticeProfile?->document_number ?? '-' }}
-                                </div>
+                                @if($user->apprenticeProfile)
+                                    <p class="text-sm font-bold text-slate-700">{{ $user->apprenticeProfile->cohort ?? 'Sin Ficha' }}</p>
+                                    @if($user->apprenticeProfile->phase)
+                                        <p class="text-[10px] text-sena font-bold uppercase tracking-widest">{{ $user->apprenticeProfile->phase->name }}</p>
+                                    @else
+                                        <p class="text-[10px] text-slate-300 font-bold uppercase tracking-widest">Sin Fase</p>
+                                    @endif
+                                @else
+                                    <span class="text-slate-300">---</span>
+                                @endif
                             </td>
 
                             <!-- Created Date -->

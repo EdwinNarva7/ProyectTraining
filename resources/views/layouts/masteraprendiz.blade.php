@@ -144,13 +144,13 @@
 
         <!-- Sidebar -->
         <aside id="sidebar"
-            class="flex flex-col absolute z-50 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-screen overflow-y-auto no-scrollbar w-72 shrink-0 bg-[#0f172a] border-r border-slate-800 transition-all duration-300 ease-in-out shadow-2xl lg:shadow-none"
+            class="flex flex-col absolute z-50 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-screen overflow-y-auto no-scrollbar w-72 shrink-0 bg-white border-r border-slate-100 transition-all duration-300 ease-in-out shadow-2xl lg:shadow-none"
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-72'">
 
             <!-- Sidebar header -->
-            <div class="flex justify-between items-center px-6 h-20 border-b border-slate-800/50">
+            <div class="flex justify-between items-center px-6 h-20 border-b border-slate-100 bg-white">
                 <!-- Close button (Mobile) -->
-                <button class="lg:hidden text-slate-400 hover:text-white transition-colors"
+                <button class="lg:hidden text-slate-500 hover:text-slate-800 transition-colors"
                     @click="sidebarOpen = false">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -165,25 +165,25 @@
                     </div>
                     <div>
                         <span
-                            class="text-2xl font-bold text-white tracking-tight font-outfit block leading-none">SIEAP<span
+                            class="text-2xl font-bold text-slate-900 tracking-tight font-outfit block leading-none">SIEAP<span
                                 class="text-sena">.</span></span>
                     </div>
                 </a>
             </div>
 
             <!-- Navigation Links -->
-            <div class="flex-1 px-4 py-8 space-y-8 overflow-y-auto no-scrollbar">
+            <div class="flex-1 px-4 py-8 space-y-8 overflow-y-auto no-scrollbar bg-white">
                 <div>
-                    <h3 class="text-[10px] uppercase text-slate-500 font-bold tracking-[0.2em] px-4 mb-6 opacity-60">
+                    <h3 class="text-[10px] uppercase text-slate-400 font-bold tracking-[0.2em] px-4 mb-6">
                         Panel de Aprendiz
                     </h3>
                     <ul class="space-y-1.5">
                         <!-- Dashboard -->
                         <li>
                             <a href="{{ route('apprentice.dashboard') }}"
-                                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 {{ request()->routeIs('apprentice.dashboard*') ? 'bg-sena/10 text-sena shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-white group sidebar-item-hover' }}">
+                                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 {{ request()->routeIs('apprentice.dashboard*') ? 'bg-sena/10 text-sena shadow-inner' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 group' }}">
                                 <i
-                                    class="fas fa-th-large w-6 h-6 flex items-center justify-center transition-colors {{ request()->routeIs('apprentice.dashboard*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                                    class="fas fa-th-large w-6 h-6 flex items-center justify-center transition-colors {{ request()->routeIs('apprentice.dashboard*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"></i>
                                 <span class="text-sm font-bold transition-opacity duration-300">Mi Resumen</span>
                             </a>
                         </li>
@@ -191,9 +191,9 @@
                         <!-- Mis Horarios -->
                         <li>
                             <a href="{{ route('apprentice.schedules.index') }}"
-                                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 {{ request()->routeIs('apprentice.schedules.*') ? 'bg-sena/10 text-sena shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-white group sidebar-item-hover' }}">
+                                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 {{ request()->routeIs('apprentice.schedules.*') ? 'bg-sena/10 text-sena shadow-inner' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 group' }}">
                                 <i
-                                    class="fas fa-clock-rotate-left w-6 h-6 flex items-center justify-center transition-colors {{ request()->routeIs('apprentice.schedules.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                                    class="fas fa-clock-rotate-left w-6 h-6 flex items-center justify-center transition-colors {{ request()->routeIs('apprentice.schedules.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"></i>
                                 <span class="text-sm font-bold transition-opacity duration-300">Mis Horarios</span>
                             </a>
                         </li>
@@ -201,27 +201,27 @@
                         <!-- Mi Asistencia -->
                         <li x-data="{ open: {{ request()->routeIs('apprentice.attendance.*') ? 'true' : 'false' }} }">
                             <div
-                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('apprentice.attendance.*') ? 'bg-sena/10 text-sena' : 'text-slate-400 hover:bg-white/5 group sidebar-item-hover' }}">
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('apprentice.attendance.*') ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
                                 <a href="{{ route('apprentice.attendance.index') }}"
                                     class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
                                     <i
-                                        class="fas fa-calendar-check w-6 h-6 flex items-center justify-center transition-colors {{ request()->routeIs('apprentice.attendance.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                                        class="fas fa-calendar-check w-6 h-6 flex items-center justify-center transition-colors {{ request()->routeIs('apprentice.attendance.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"></i>
                                     <span class="text-sm font-bold transition-opacity duration-300">Mi Asistencia</span>
                                 </a>
-                                <button @click="open = !open" class="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-600"
+                                <button @click="open = !open" class="p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-700"
                                         :class="open ? 'rotate-180 text-sena' : ''" viewBox="0 0 12 12">
                                         <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" fill="currentColor" />
                                     </svg>
                                 </button>
                             </div>
-                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-800/40" x-show="open"
+                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-100" x-show="open"
                                 x-cloak x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0 text-slate-400">
+                                x-transition:enter-end="opacity-100 translate-y-0">
                                 <li>
                                     <a href="{{ route('apprentice.attendance.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('apprentice.attendance.index') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('apprentice.attendance.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Panel Diario
@@ -229,7 +229,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('apprentice.attendance.logs') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('apprentice.attendance.logs') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('apprentice.attendance.logs') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Mi Bitácora
@@ -241,10 +241,21 @@
                         <!-- Certificados -->
                         <li>
                             <a href="{{ route('apprentice.certificates.index') }}"
-                                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 {{ request()->routeIs('apprentice.certificates.*') ? 'bg-sena/10 text-sena shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-white group sidebar-item-hover' }}">
+                                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 {{ request()->routeIs('apprentice.certificates.*') ? 'bg-sena/10 text-sena shadow-inner' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 group' }}">
                                 <i
-                                    class="fas fa-certificate w-6 h-6 flex items-center justify-center transition-colors {{ request()->routeIs('apprentice.certificates.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                                    class="fas fa-certificate w-6 h-6 flex items-center justify-center transition-colors {{ request()->routeIs('apprentice.certificates.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"></i>
                                 <span class="text-sm font-bold transition-opacity duration-300">Certificados</span>
+                            </a>
+                        </li>
+
+                        <!-- Mi Progreso de Horas -->
+                        <li>
+                            <a href="{{ route('apprentice.hours.progress') }}"
+                                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 {{ request()->routeIs('apprentice.hours.progress') ? 'bg-sena/10 text-sena shadow-inner' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 group' }}">
+                                <div class="relative">
+                                    <i class="fas fa-history text-lg transition-colors {{ request()->routeIs('apprentice.hours.progress') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"></i>
+                                </div>
+                                <span class="text-sm font-bold transition-opacity duration-300">Mi Progreso</span>
                             </a>
                         </li>
 
@@ -252,27 +263,27 @@
                         <li
                             x-data="{ open: {{ (request()->routeIs('apprentice.penalties.*') || request()->routeIs('apprentice.recovery.*')) ? 'true' : 'false' }} }">
                             <div
-                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ (request()->routeIs('apprentice.penalties.*') || request()->routeIs('apprentice.recovery.*')) ? 'bg-rose-500/10 text-rose-500' : 'text-slate-400 hover:bg-white/5 group sidebar-item-hover' }}">
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ (request()->routeIs('apprentice.penalties.*') || request()->routeIs('apprentice.recovery.*')) ? 'bg-rose-500/10 text-rose-500' : 'text-slate-600 hover:bg-slate-50 group' }}">
                                 <a href="{{ route('apprentice.penalties.index') }}"
                                     class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
                                     <i
-                                        class="fas fa-exclamation-triangle w-6 h-6 flex items-center justify-center transition-colors {{ (request()->routeIs('apprentice.penalties.*') || request()->routeIs('apprentice.recovery.*')) ? 'text-rose-500' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                                        class="fas fa-exclamation-triangle w-6 h-6 flex items-center justify-center transition-colors {{ (request()->routeIs('apprentice.penalties.*') || request()->routeIs('apprentice.recovery.*')) ? 'text-rose-500' : 'text-slate-500 group-hover:text-slate-700' }}"></i>
                                     <span class="text-sm font-bold transition-opacity duration-300">Cumplimiento</span>
                                 </a>
-                                <button @click="open = !open" class="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-600"
+                                <button @click="open = !open" class="p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-700"
                                         :class="open ? 'rotate-180 text-rose-500' : ''" viewBox="0 0 12 12">
                                         <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" fill="currentColor" />
                                     </svg>
                                 </button>
                             </div>
-                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-800/40" x-show="open"
+                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-100" x-show="open"
                                 x-cloak x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0 text-slate-400">
+                                x-transition:enter-end="opacity-100 translate-y-0">
                                 <li>
                                     <a href="{{ route('apprentice.penalties.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('apprentice.penalties.index') ? 'text-rose-500' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('apprentice.penalties.index') ? 'text-rose-500' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Deuda de Horas
@@ -280,7 +291,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('apprentice.penalties.requests') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('apprentice.penalties.requests') ? 'text-rose-500' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('apprentice.penalties.requests') ? 'text-rose-500' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Solicitudes
@@ -288,7 +299,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('apprentice.recovery.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('apprentice.recovery.index') ? 'text-rose-500' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('apprentice.recovery.index') ? 'text-rose-500' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Recuperación
@@ -301,23 +312,21 @@
             </div>
 
             <!-- Sidebar Footer -->
-            <div class="p-4 border-t border-slate-800/50">
-                <div class="bg-white/5 p-3 rounded-2xl flex items-center gap-3">
+            <div class="p-4 border-t border-slate-100 bg-white">
+                <div class="bg-slate-50 p-3 rounded-2xl flex items-center gap-3 border border-slate-100">
                     <div
-                        class="w-9 h-9 rounded-xl sena-gradient flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-sena/10 border border-white/10">
-                        {{ substr(Auth::user()->name, 0, 1) }}
+                        class="w-9 h-9 rounded-xl sena-gradient flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-sena/10 border border-white/10 overflow-hidden">
+                        @if(Auth::user()->profile_photo_path)
+                            <img src="{{ Storage::url(Auth::user()->profile_photo_path) }}" class="w-full h-full object-cover">
+                        @else
+                            {{ substr(Auth::user()->name, 0, 1) }}
+                        @endif
                     </div>
-                    <div class="flex-1 overflow-hidden">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">
+                    <div class="flex-1 overflow-hidden text-center">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">
                             Aprendiz</p>
-                        <p class="text-xs font-bold text-white truncate">{{ Auth::user()->name }}</p>
+                        <p class="text-xs font-bold text-slate-900 truncate">{{ Auth::user()->name }}</p>
                     </div>
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="text-slate-500 hover:text-rose-500 transition-colors p-2">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </form>
                 </div>
             </div>
         </aside>
@@ -358,8 +367,12 @@
                             <button @click="userMenu = !userMenu"
                                 class="flex items-center gap-3 group px-2 py-1.5 rounded-xl hover:bg-white transition-all hover:shadow-md border border-transparent hover:border-slate-100">
                                 <div
-                                    class="w-9 h-9 rounded-xl sena-gradient flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white">
-                                    {{ substr(Auth::user()->name, 0, 1) }}
+                                    class="w-9 h-9 rounded-xl sena-gradient flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white overflow-hidden">
+                                    @if(Auth::user()->profile_photo_path)
+                                        <img src="{{ Storage::url(Auth::user()->profile_photo_path) }}" class="w-full h-full object-cover">
+                                    @else
+                                        {{ substr(Auth::user()->name, 0, 1) }}
+                                    @endif
                                 </div>
                                 <div class="text-left hidden sm:block">
                                     <p class="text-[12px] font-bold text-slate-800 leading-none mb-0.5">

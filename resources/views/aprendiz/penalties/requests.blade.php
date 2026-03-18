@@ -112,7 +112,7 @@
                     </div>
                     <div class="space-y-3">
                         <h3 class="text-2xl font-black text-slate-800 font-outfit uppercase tracking-tighter">Sin solicitudes activas</h3>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] max-w-sm mx-auto leading-relaxed">Tus peticiones de recuperación para fines de semana se listarán aquí.</p>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] max-w-sm mx-auto leading-relaxed">Tus peticiones de recuperación se listarán aquí una vez que las envíes.</p>
                     </div>
                     <a href="{{ route('apprentice.penalties.index') }}" 
                        class="px-8 py-3 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all">

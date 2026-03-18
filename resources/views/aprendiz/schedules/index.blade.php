@@ -43,16 +43,20 @@
                         <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Carga Semanal</span>
                     </div>
                     @php
-                        $totalHours = 0;
+                        $totalMinutes = 0;
                         foreach($schedules as $schedule) {
                             $start = \Carbon\Carbon::parse($schedule->start_time);
                             $end = \Carbon\Carbon::parse($schedule->end_time);
-                            $totalHours += $start->diffInHours($end);
+                            $totalMinutes += $start->diffInMinutes($end);
                         }
+                        $hours = floor($totalMinutes / 60);
+                        $minutes = $totalMinutes % 60;
                     @endphp
                     <div class="flex items-baseline gap-2">
-                        <span class="text-5xl font-black text-slate-800 font-outfit tracking-tighter">{{ $totalHours }}</span>
-                        <span class="text-sm font-black text-slate-400 uppercase tracking-widest">Horas</span>
+                        <span class="text-5xl font-black text-slate-800 font-outfit tracking-tighter">{{ $hours }}<span class="text-xl opacity-40">h</span></span>
+                        @if($minutes > 0)
+                            <span class="text-lg font-black text-slate-400">{{ $minutes }}m</span>
+                        @endif
                     </div>
                 </div>
 
@@ -144,9 +148,16 @@
                                             @php
                                                 $start = \Carbon\Carbon::parse($schedule->start_time);
                                                 $end = \Carbon\Carbon::parse($schedule->end_time);
+                                                $totalMinutes = $start->diffInMinutes($end);
+                                                $hours = floor($totalMinutes / 60);
+                                                $minutes = $totalMinutes % 60;
+                                                $timeDisplay = $hours > 0 ? "{$hours}h" : '';
+                                                if($minutes > 0) {
+                                                    $timeDisplay .= ($hours > 0 ? ' ' : '') . "{$minutes}m";
+                                                }
                                             @endphp
                                             <span class="inline-flex items-center px-4 py-1.5 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest group-hover/item:bg-indigo-600 transition-colors">
-                                                {{ $start->diffInHours($end) }} Horas
+                                                {{ $timeDisplay ?: '0m' }}
                                             </span>
                                         </td>
                                         <td class="px-10 py-6 text-right">

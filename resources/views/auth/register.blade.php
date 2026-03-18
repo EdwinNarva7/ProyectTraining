@@ -231,32 +231,37 @@
                             académicas en el SENA.
                         </p>
 
-                        <div class="grid grid-cols-2 gap-6 mt-12">
-                            <div class="glass-panel p-6 rounded-3xl border-white/20">
-                                <p class="text-3xl font-bold mb-1">100%</p>
-                                <p class="text-xs uppercase tracking-wider font-semibold opacity-80">Digital</p>
+                        <div class="flex flex-col gap-3 mt-12">
+                            <!-- 100% Digital -->
+                            <div class="flex items-center gap-4 bg-white/20 backdrop-blur-md rounded-full px-6 py-4 border border-white/30 hover:bg-white/25 transition-all duration-300">
+                                <div class="w-10 h-10 bg-green-400 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-xs uppercase tracking-wider font-bold text-white/70">100% Digital</p>
+                                    <p class="text-sm font-bold text-white">Registro Completamente Online</p>
+                                </div>
                             </div>
-                            <div class="glass-panel p-6 rounded-3xl border-white/20">
-                                <p class="text-3xl font-bold mb-1">Rápido</p>
-                                <p class="text-xs uppercase tracking-wider font-semibold opacity-80">Seguro</p>
+
+                            <!-- Rápido y Seguro -->
+                            <div class="flex items-center gap-4 bg-white/20 backdrop-blur-md rounded-full px-6 py-4 border border-white/30 hover:bg-white/25 transition-all duration-300">
+                                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-xs uppercase tracking-wider font-bold text-white/70">Rápido y Seguro</p>
+                                    <p class="text-sm font-bold text-white">Autenticación Encriptada</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Elemento decorativo flotante -->
-                <div
-                    class="absolute bottom-12 right-12 glass-panel p-6 rounded-3xl shadow-2xl flex items-center gap-4 animate-float">
-                    <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-inner">
-                        <svg class="w-7 h-7 text-[#39A900]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Validación SENA</p>
-                        <p class="text-slate-800 font-bold">Registro Oficial</p>
-                    </div>
                 </div>
             </div>
         </div>

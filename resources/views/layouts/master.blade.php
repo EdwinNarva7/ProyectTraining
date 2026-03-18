@@ -152,7 +152,7 @@
 
         <!-- Sidebar -->
         <aside id="sidebar"
-            class="flex flex-col absolute z-50 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-screen overflow-y-auto no-scrollbar w-72 shrink-0 bg-[#0f172a] border-r border-slate-800 transition-all duration-300 ease-in-out shadow-2xl lg:shadow-none"
+            class="flex flex-col absolute z-50 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-screen overflow-y-auto no-scrollbar w-72 shrink-0 bg-white border-r border-slate-100 transition-all duration-300 ease-in-out shadow-2xl lg:shadow-none"
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-72'">
 
             <!-- Sidebar header -->
@@ -222,13 +222,13 @@
                                     </svg>
                                 </button>
                             </div>
-                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-800/40" x-show="open"
+                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-100" x-show="open"
                                 x-cloak x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0 text-slate-400">
+                                x-transition:enter-end="opacity-100 translate-y-0">
                                 <li>
                                     <a href="{{ route('admin.users.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.users.index') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.users.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Todos los Usuarios
@@ -236,7 +236,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('admin.users.create') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.users.create') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.users.create') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Registrar Nuevo
@@ -245,33 +245,76 @@
                             </ul>
                         </li>
 
+                        <!-- Fases (Cohortes) -->
+                        <li x-data="{ open: {{ request()->routeIs('admin.phases.*') ? 'true' : 'false' }} }">
+                            <div
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.phases.*') ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
+                                <a href="{{ route('admin.phases.index') }}"
+                                    class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.phases.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path
+                                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                    <span class="text-sm font-bold transition-opacity duration-300">Fases</span>
+                                </a>
+                                <button @click="open = !open" class="p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-700"
+                                        :class="open ? 'rotate-180 text-sena' : ''" viewBox="0 0 12 12">
+                                        <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-100" x-show="open"
+                                x-cloak x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 -translate-y-2"
+                                x-transition:enter-end="opacity-100 translate-y-0">
+                                <li>
+                                    <a href="{{ route('admin.phases.index') }}"
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.phases.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
+                                        <span
+                                            class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
+                                        Gestionar Fases
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.phases.create') }}"
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.phases.create') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
+                                        <span
+                                            class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
+                                        Crear Fase
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
                         <!-- Asistencia -->
                         <li x-data="{ open: {{ request()->routeIs('admin.attendance.*') ? 'true' : 'false' }} }">
                             <div
-                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.attendance.*') ? 'bg-sena/10 text-sena' : 'text-slate-400 hover:bg-white/5 group sidebar-item-hover' }}">
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.attendance.*') ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
                                 <a href="{{ route('admin.attendance.index') }}"
                                     class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
-                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.attendance.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-300' }}"
+                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.attendance.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path
                                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                     </svg>
                                     <span class="text-sm font-bold transition-opacity duration-300">Asistencia</span>
                                 </a>
-                                <button @click="open = !open" class="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-600"
+                                <button @click="open = !open" class="p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-700"
                                         :class="open ? 'rotate-180 text-sena' : ''" viewBox="0 0 12 12">
                                         <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" fill="currentColor" />
                                     </svg>
                                 </button>
                             </div>
-                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-800/40" x-show="open"
+                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-100" x-show="open"
                                 x-cloak x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0 text-slate-400">
+                                x-transition:enter-end="opacity-100 translate-y-0">
                                 <li>
                                     <a href="{{ route('admin.attendance.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.index') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Panel de Control
@@ -279,7 +322,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('admin.attendance.logs') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.logs') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.logs') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Logs de Registros
@@ -287,7 +330,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('admin.attendance.detailed-report') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.detailed-report') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.detailed-report') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Reporte Detallado
@@ -295,7 +338,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('admin.attendance.sessions') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.sessions') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.sessions') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Sesiones
@@ -307,30 +350,30 @@
                         <!-- Horarios -->
                         <li x-data="{ open: {{ request()->routeIs('admin.schedules.*') ? 'true' : 'false' }} }">
                             <div
-                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.schedules.*') ? 'bg-sena/10 text-sena' : 'text-slate-400 hover:bg-white/5 group sidebar-item-hover' }}">
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.schedules.*') ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
                                 <a href="{{ route('admin.schedules.index') }}"
                                     class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
-                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.schedules.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-300' }}"
+                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.schedules.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path
                                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                     <span class="text-sm font-bold transition-opacity duration-300">Horarios</span>
                                 </a>
-                                <button @click="open = !open" class="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-600"
+                                <button @click="open = !open" class="p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-700"
                                         :class="open ? 'rotate-180 text-sena' : ''" viewBox="0 0 12 12">
                                         <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" fill="currentColor" />
                                     </svg>
                                 </button>
                             </div>
-                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-800/40" x-show="open"
+                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-100" x-show="open"
                                 x-cloak x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0 text-slate-400">
+                                x-transition:enter-end="opacity-100 translate-y-0">
                                 <li>
                                     <a href="{{ route('admin.schedules.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.schedules.index') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.schedules.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Ver Registros
@@ -338,7 +381,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('admin.schedules.create') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.schedules.create') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.schedules.create') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Asignar Horario
@@ -383,34 +426,50 @@
                             </ul>
                         </li>
 
-                        <!-- Recuperación de Horas -->
-                        <li
-                            x-data="{ open: {{ request()->routeIs('admin.penalties.*') || request()->routeIs('admin.recovery-requests.*') || request()->routeIs('admin.recovery-sessions.*') ? 'true' : 'false' }} }">
+                        <!-- Cumplimiento -->
+                        <li x-data="{ open: {{ request()->routeIs('admin.reports.hours') ? 'true' : 'false' }} }">
                             <div
-                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.penalties.*') || request()->routeIs('admin.recovery-requests.*') || request()->routeIs('admin.recovery-sessions.*') ? 'bg-sena/10 text-sena' : 'text-slate-400 hover:bg-white/5 group sidebar-item-hover' }}">
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.reports.hours') ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
+                                <a href="{{ route('admin.reports.hours') }}"
+                                    class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.reports.hours') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-sm font-bold transition-opacity duration-300">Control de Horas</span>
+                                </a>
+                            </div>
+                        </li>
+
+                        <!-- Recuperación -->
+                        <li
+                            x-data="{ open: {{ (request()->routeIs('admin.penalties.*') || request()->routeIs('admin.recovery-requests.*') || request()->routeIs('admin.recovery-sessions.*')) ? 'true' : 'false' }} }">
+                            <div
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ (request()->routeIs('admin.penalties.*') || request()->routeIs('admin.recovery-requests.*') || request()->routeIs('admin.recovery-sessions.*')) ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
                                 <a href="{{ route('admin.penalties.index') }}"
                                     class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
-                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.penalties.*') || request()->routeIs('admin.recovery-requests.*') || request()->routeIs('admin.recovery-sessions.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-300' }}"
+                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ (request()->routeIs('admin.penalties.*') || request()->routeIs('admin.recovery-requests.*') || request()->routeIs('admin.recovery-sessions.*')) ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                                        <path
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
-                                    <span class="text-sm font-bold transition-opacity duration-300">Recuperación</span>
+                                    <span class="text-sm font-bold transition-opacity duration-300">Cumplimiento</span>
                                 </a>
-                                <button @click="open = !open" class="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-600"
+                                <button @click="open = !open" class="p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-700"
                                         :class="open ? 'rotate-180 text-sena' : ''" viewBox="0 0 12 12">
                                         <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" fill="currentColor" />
                                     </svg>
                                 </button>
                             </div>
-                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-800/40" x-show="open"
+                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-100" x-show="open"
                                 x-cloak x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0 text-slate-400">
+                                x-transition:enter-end="opacity-100 translate-y-0">
                                 <li>
                                     <a href="{{ route('admin.penalties.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.penalties.index') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.penalties.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Penalizaciones
@@ -418,7 +477,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('admin.recovery-requests.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.recovery-requests.index') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.recovery-requests.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Solicitudes
@@ -426,7 +485,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('admin.recovery-sessions.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.recovery-sessions.index') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.recovery-sessions.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Sesiones
@@ -438,42 +497,14 @@
                         <!-- Huella Digital -->
                         <li x-data="{ open: {{ request()->routeIs('admin.fingerprint.*') ? 'true' : 'false' }} }">
                             <div
-                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.fingerprint.*') ? 'bg-sena/10 text-sena' : 'text-slate-400 hover:bg-white/5 group sidebar-item-hover' }}">
-                                <a href="{{ route('admin.fingerprint.scanner') }}"
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.fingerprint.*') ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
+                                <a href="{{ route('admin.fingerprint.enroll') }}"
                                     class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
                                     <i
-                                        class="fas fa-fingerprint w-6 h-6 flex items-center justify-center transition-colors {{ request()->routeIs('admin.fingerprint.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
-                                    <span class="text-sm font-bold transition-opacity duration-300">Huella
-                                        Digital</span>
+                                        class="fas fa-fingerprint w-6 h-6 flex items-center justify-center transition-colors {{ request()->routeIs('admin.fingerprint.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"></i>
+                                    <span class="text-sm font-bold transition-opacity duration-300">Gestión de Huellas</span>
                                 </a>
-                                <button @click="open = !open" class="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-600"
-                                        :class="open ? 'rotate-180 text-sena' : ''" viewBox="0 0 12 12">
-                                        <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" fill="currentColor" />
-                                    </svg>
-                                </button>
                             </div>
-                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-800/40" x-show="open"
-                                x-cloak x-transition:enter="transition ease-out duration-200"
-                                x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0 text-slate-400">
-                                <li>
-                                    <a href="{{ route('admin.fingerprint.scanner') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.fingerprint.scanner') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
-                                        <span
-                                            class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
-                                        Escáner
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('admin.fingerprint.enroll') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.fingerprint.enroll') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
-                                        <span
-                                            class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
-                                        Enrolamiento
-                                    </a>
-                                </li>
-                            </ul>
                         </li>
                     </ul>
                 </div>
@@ -528,8 +559,12 @@
                             <button @click="userMenu = !userMenu"
                                 class="flex items-center gap-3 group px-2 py-1.5 rounded-xl hover:bg-white transition-all hover:shadow-md border border-transparent hover:border-slate-100">
                                 <div
-                                    class="w-9 h-9 rounded-xl sena-gradient flex items-center justify-center text-white font-bold text-sm shadow-sena">
-                                    {{ substr(Auth::user()->name, 0, 1) }}
+                                    class="w-9 h-9 rounded-xl sena-gradient flex items-center justify-center text-white font-bold text-sm shadow-sena overflow-hidden">
+                                    @if(Auth::user()->profile_photo_path)
+                                        <img src="{{ Storage::url(Auth::user()->profile_photo_path) }}" class="w-full h-full object-cover">
+                                    @else
+                                        {{ substr(Auth::user()->name, 0, 1) }}
+                                    @endif
                                 </div>
                                 <div class="text-left hidden sm:block">
                                     <p class="text-[12px] font-bold text-slate-800 leading-none mb-0.5">

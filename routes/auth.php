@@ -9,18 +9,32 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\FingerprintLoginController;
+use App\Http\Controllers\Auth\BiometricLoginController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
+    // ── Login Tradicional ────────────────────────────────────────
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])
+        ->name('login');
+    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+
+    // ── Ingreso Biométrico (Página separada) ────────────────────
+    Route::get('biometric-login', [BiometricLoginController::class, 'biometricPanel'])
+        ->name('biometric.panel');
+    Route::post('biometric-login/fingerprint', [BiometricLoginController::class, 'fingerprintLogin'])
+        ->name('biometric.fingerprint-login');
+    Route::post('biometric-login/manual', [BiometricLoginController::class, 'manualLogin'])
+        ->name('biometric.manual-login');
+
+    // ── Legacy API (para compatibilidad) ────────────────────────
+    Route::post('fingerprint-login', [FingerprintLoginController::class, 'login'])
+        ->name('fingerprint.login');
+
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
 
     Route::post('register', [RegisteredUserController::class, 'store']);
-
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
-        ->name('login');
-
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');

@@ -9,11 +9,105 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Carbon\Carbon;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * Obtener el total de minutos laborados (Asistencia + Recuperación)
+     */
+    public function getTotalWorkedMinutes($phaseId = null)
+    {
+        $attendanceMinutes = $this->attendanceSessions()
+            ->when($phaseId, function ($query) use ($phaseId) {
+                return $query->whereHas('apprentice.apprenticeProfile', function ($p) use ($phaseId) {
+                    $p->where('phase_id', $phaseId);
+                });
+            })
+            ->sum('duration_minutes');
+
+        $recoveryMinutes = $this->recoverySessions()
+            ->where('status', 'completed')
+            ->when($phaseId, function ($query) use ($phaseId) {
+                return $query->whereHas('apprentice.apprenticeProfile', function ($p) use ($phaseId) {
+                    $p->where('phase_id', $phaseId);
+                });
+            })
+            ->sum('duration_minutes');
+
+        return $attendanceMinutes + $recoveryMinutes;
+    }
+
+    /**
+     * Obtener minutos laborados hoy
+     */
+    public function getDailyWorkedMinutes()
+    {
+        $today = Carbon::today();
+
+        $attendanceMinutes = $this->attendanceSessions()
+            ->whereDate('start_at', $today)
+            ->sum('duration_minutes');
+
+        $recoveryMinutes = $this->recoverySessions()
+            ->where('status', 'completed')
+            ->whereDate('date', $today)
+            ->sum('duration_minutes');
+
+        return $attendanceMinutes + $recoveryMinutes;
+    }
+
+    /**
+     * Obtener minutos laborados esta semana
+     */
+    public function getWeeklyWorkedMinutes()
+    {
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $endOfWeek = Carbon::now()->endOfWeek();
+
+        $attendanceMinutes = $this->attendanceSessions()
+            ->whereBetween('start_at', [$startOfWeek, $endOfWeek])
+            ->sum('duration_minutes');
+
+        $recoveryMinutes = $this->recoverySessions()
+            ->where('status', 'completed')
+            ->whereBetween('date', [$startOfWeek, $endOfWeek])
+            ->sum('duration_minutes');
+
+        return $attendanceMinutes + $recoveryMinutes;
+    }
+
+    /**
+     * Obtener minutos recuperados totales
+     */
+    public function getTotalRecoveredMinutes()
+    {
+        return $this->recoverySessions()
+            ->where('status', 'completed')
+            ->sum('duration_minutes');
+    }
+
+    /**
+     * Convertir minutos a formato legible (H:i) o Horas decimales
+     */
+    public function formatMinutesToHours($minutes)
+    {
+        $hours = floor($minutes / 60);
+        $remainingMinutes = $minutes % 60;
+        
+        if ($hours > 0 && $remainingMinutes > 0) {
+            return "{$hours}h {$remainingMinutes}m";
+        } elseif ($hours > 0) {
+            return "{$hours}h";
+        } elseif ($remainingMinutes > 0) {
+            return "{$remainingMinutes}m";
+        } else {
+            return "00:00";
+        }
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -26,7 +120,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'status'
+        'status',
+        'profile_photo_path'
     ];
 
     /**

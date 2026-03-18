@@ -221,8 +221,12 @@
                             <tr class="hover:bg-slate-50/50 transition-all group">
                                 <td class="px-8 py-6">
                                     <div class="flex items-center gap-4">
-                                        <div class="w-12 h-12 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold shadow-sena shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform">
-                                            {{ strtoupper(substr($row['apprentice']->full_name, 0, 1)) }}
+                                        <div class="w-12 h-12 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold shadow-sena shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform overflow-hidden">
+                                            @if($row['apprentice']->profile_photo_path)
+                                                <img src="{{ Storage::url($row['apprentice']->profile_photo_path) }}" class="w-full h-full object-cover">
+                                            @else
+                                                {{ strtoupper(substr($row['apprentice']->full_name, 0, 1)) }}
+                                            @endif
                                         </div>
                                         <div>
                                             <p class="text-sm font-bold text-slate-800 mb-0.5">{{ $row['apprentice']->full_name }}</p>

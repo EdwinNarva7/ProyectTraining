@@ -12,6 +12,7 @@ class ApprenticeProfile extends Model
 
     protected $fillable = [
         'user_id',
+        'phase_id',
         'document_number',
         'phone',
         'cohort',
@@ -26,6 +27,11 @@ class ApprenticeProfile extends Model
         'end_date' => 'date',
         'fingerprint_enrolled_at' => 'datetime'
     ];
+
+    public function phase(): BelongsTo
+    {
+        return $this->belongsTo(Phase::class);
+    }
 
     public function hasFingerprint(): bool
     {
