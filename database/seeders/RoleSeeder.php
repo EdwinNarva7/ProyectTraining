@@ -22,5 +22,10 @@ class RoleSeeder extends Seeder
             ['name' => 'Aprendiz'],
             ['description' => 'Registra asistencia y descarga certificados']
         );
+
+        Role::firstOrCreate(
+            ['name' => 'Gerente'],
+            ['description' => 'Gestiona penalizaciones y recuperación de aprendices']
+        );
     }
 }

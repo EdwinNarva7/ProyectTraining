@@ -14,16 +14,16 @@
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900 mb-2 font-outfit">Editar Asignación</h1>
-                <p class="text-gray-500 text-sm">Modificando horario para {{ $schedule->apprentice->full_name }}</p>
+                <p class="text-gray-500 text-sm">Modificando horario para {{ $schedule->technologist ? $schedule->technologist->name : $schedule->apprentice->full_name }}</p>
             </div>
             <div>
-                <a href="{{ route('admin.schedules.show', $schedule) }}"
+                <a href="{{ route('admin.schedules.index') }}"
                     class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-all duration-200">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
                         </path>
                     </svg>
-                    Volver a Detalles
+                    Volver a la Lista
                 </a>
             </div>
         </div>
@@ -49,31 +49,39 @@
                     @csrf
                     @method('PUT')
 
-                    <!-- Apprentice Selection (Disabled/ReadOnly feel) -->
+                    <!-- Technologist Selection -->
                     <div class="space-y-4">
-                        <label class="block text-sm font-bold text-gray-700 ml-1">Aprendiz</label>
-                        <div class="relative group opacity-75">
-                            <select name="apprentice_id" id="apprentice_id"
-                                class="w-full pl-12 pr-4 py-3.5 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 focus:outline-none cursor-not-allowed appearance-none"
+                        <label class="block text-sm font-bold text-gray-700 ml-1">Tecnólogo / Programa <span
+                                class="text-rose-500">*</span></label>
+                        <div class="relative group">
+                            <select name="technologist_id" id="technologist_id"
+                                class="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition duration-200 appearance-none @error('technologist_id') border-rose-500 @enderror"
                                 required>
-                                @foreach ($apprentices as $apprentice)
-                                    <option value="{{ $apprentice->id }}"
-                                        data-name="{{ $apprentice->full_name }}"
-                                        data-email="{{ $apprentice->email }}"
-                                        data-cohort="{{ $apprentice->apprenticeProfile?->cohort ?? 'N/A' }}"
-                                        {{ old('apprentice_id', $schedule->apprentice_id) == $apprentice->id ? 'selected' : '' }}>
-                                        {{ $apprentice->full_name }}
-                                    </option>
+                                <option value="">Elija un programa...</option>
+                                @foreach($phases as $phase)
+                                    <optgroup label="Fase: {{ $phase->name }}">
+                                        @foreach($phase->technologists as $tech)
+                                            <option value="{{ $tech->id }}"
+                                                {{ old('technologist_id', $schedule->technologist_id) == $tech->id ? 'selected' : '' }}>
+                                                {{ $tech->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
                                 @endforeach
                             </select>
                             <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                 </svg>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Hidden Apprentice Field (to maintain existing individual schedules if updated via this form) -->
+                    @if($schedule->apprentice_id)
+                    <input type="hidden" name="apprentice_id" value="{{ $schedule->apprentice_id }}">
+                    @endif
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <!-- Weekday -->
@@ -184,18 +192,18 @@
         <div class="space-y-6">
             <!-- Current Status Detail -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                <h3 class="text-sm font-bold text-gray-900 uppercase tracking-widest mb-6">Registro Actual</h3>
+                <h3 class="text-sm font-bold text-gray-900 uppercase tracking-widest mb-6">Programa Actual</h3>
                 
                 <div class="flex flex-col items-center text-center">
-                    <div id="app_avatar" class="w-24 h-24 rounded-full bg-gradient-to-br from-sena to-sena-dark flex items-center justify-center text-white text-3xl font-bold mb-4 shadow-lg ring-4 ring-sena/10">
-                        {{ strtoupper(substr($schedule->apprentice->full_name, 0, 2)) }}
+                    <div id="tech_avatar" class="w-24 h-24 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-white text-3xl font-bold mb-4 shadow-lg ring-4 ring-amber-500/10">
+                        <i class="fas fa-graduation-cap"></i>
                     </div>
-                    <h4 id="app_name" class="text-xl font-bold text-gray-900 mb-1">{{ $schedule->apprentice->full_name }}</h4>
-                    <p id="app_email" class="text-sm text-gray-500 mb-6 font-medium">{{ $schedule->apprentice->email }}</p>
+                    <h4 id="tech_name" class="text-xl font-bold text-gray-900 mb-1">{{ $schedule->technologist ? $schedule->technologist->name : 'Individual' }}</h4>
+                    <p id="tech_phase" class="text-sm text-gray-500 mb-6 font-medium">{{ $schedule->technologist?->phase?->name ?? 'Horario Personalizado' }}</p>
 
                     <div class="w-full space-y-3">
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ID</span>
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ID Horario</span>
                             <span class="text-sm font-bold text-gray-900">#{{ $schedule->id }}</span>
                         </div>
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">

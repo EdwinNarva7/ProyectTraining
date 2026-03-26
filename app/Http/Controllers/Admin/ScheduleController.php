@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Schedule;
 use App\Models\User;
+use App\Models\Phase;
+use App\Models\Technologist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -16,9 +18,13 @@ class ScheduleController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Schedule::with(['apprentice', 'createdBy']);
+        $query = Schedule::with(['technologist.phase', 'apprentice', 'createdBy']);
 
         // Filtros
+        if ($request->filled('technologist_id')) {
+            $query->where('technologist_id', $request->technologist_id);
+        }
+
         if ($request->filled('apprentice_id')) {
             $query->where('apprentice_id', $request->apprentice_id);
         }
@@ -32,11 +38,12 @@ class ScheduleController extends Controller
         }
 
         $schedules = $query->orderBy('created_at', 'desc')->paginate(15);
+        $phases = Phase::with('technologists')->get();
         $apprentices = User::whereHas('role', function($q) {
             $q->where('name', 'Aprendiz');
         })->where('status', 'activo')->get();
 
-        return view('admin.schedules.index', compact('schedules', 'apprentices'));
+        return view('admin.schedules.index', compact('schedules', 'phases', 'apprentices'));
     }
 
     /**
@@ -44,11 +51,13 @@ class ScheduleController extends Controller
      */
     public function create()
     {
+        $phases = Phase::with('technologists')->get();
+        // Mantener aprendices por si se requiere un horario individual (opcional)
         $apprentices = User::whereHas('role', function($q) {
             $q->where('name', 'Aprendiz');
         })->where('status', 'activo')->with('apprenticeProfile')->get();
 
-        return view('admin.schedules.create', compact('apprentices'));
+        return view('admin.schedules.create', compact('phases', 'apprentices'));
     }
 
     /**
@@ -57,16 +66,17 @@ class ScheduleController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'apprentice_id' => 'required|exists:users,id',
-            'weekday' => 'required|integer|between:1,7',
+            'technologist_id' => 'required_without:apprentice_id|exists:technologists,id',
+            'apprentice_id' => 'nullable|exists:users,id',
+            'weekday' => 'required|in:1,2,3,4,5,6,7,all',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'status' => 'required|in:activo,inactivo',
         ], [
-            'apprentice_id.required' => 'Debe seleccionar un aprendiz.',
-            'apprentice_id.exists' => 'El aprendiz seleccionado no existe.',
+            'technologist_id.required_without' => 'Debe seleccionar un tecnólogo.',
+            'technologist_id.exists' => 'El tecnólogo seleccionado no existe.',
             'weekday.required' => 'Debe seleccionar un día de la semana.',
-            'weekday.between' => 'El día debe estar entre 1 y 7.',
+            'weekday.in' => 'Día de la semana no válido.',
             'start_time.required' => 'Debe especificar la hora de inicio.',
             'start_time.date_format' => 'El formato de hora de inicio no es válido.',
             'end_time.required' => 'Debe especificar la hora de fin.',
@@ -82,27 +92,39 @@ class ScheduleController extends Controller
                 ->withInput();
         }
 
-        // Verificar si ya existe un horario para este aprendiz en este día
-        $existingSchedule = Schedule::where('apprentice_id', $request->apprentice_id)
-            ->where('weekday', $request->weekday)
-            ->where('status', 'activo')
-            ->first();
+        $weekdays = $request->weekday === 'all' ? [1, 2, 3, 4, 5] : [$request->weekday];
 
-        if ($existingSchedule) {
-            return redirect()->back()
-                ->withErrors(['weekday' => 'Ya existe un horario activo para este aprendiz en este día de la semana.'])
-                ->withInput();
+        foreach ($weekdays as $day) {
+            // Verificar colisión de horarios activos
+            $query = Schedule::where('weekday', $day)
+                ->where('status', 'activo');
+                
+            if ($request->technologist_id) {
+                $query->where('technologist_id', $request->technologist_id);
+            } else {
+                $query->where('apprentice_id', $request->apprentice_id);
+            }
+
+            if ($query->exists()) {
+                $dayName = \App\Models\Schedule::make(['weekday' => $day])->weekday_name;
+                return redirect()->back()
+                    ->withErrors(['weekday' => 'Ya existe un horario activo para este ' . ($request->technologist_id ? 'tecnólogo' : 'aprendiz') . ' el día ' . $dayName . '.'])
+                    ->withInput();
+            }
         }
 
         try {
-            $schedule = Schedule::create([
-                'apprentice_id' => $request->apprentice_id,
-                'weekday' => $request->weekday,
-                'start_time' => $request->start_time,
-                'end_time' => $request->end_time,
-                'status' => $request->status,
-                'created_by' => Auth::id(),
-            ]);
+            foreach ($weekdays as $day) {
+                Schedule::create([
+                    'technologist_id' => $request->technologist_id,
+                    'apprentice_id' => $request->apprentice_id,
+                    'weekday' => $day,
+                    'start_time' => $request->start_time,
+                    'end_time' => $request->end_time,
+                    'status' => $request->status,
+                    'created_by' => Auth::id(),
+                ]);
+            }
 
             return redirect()->route('admin.schedules.index')
                 ->with('success', 'Horario creado exitosamente.');
@@ -128,11 +150,12 @@ class ScheduleController extends Controller
      */
     public function edit(Schedule $schedule)
     {
+        $phases = Phase::with('technologists')->get();
         $apprentices = User::whereHas('role', function($q) {
             $q->where('name', 'Aprendiz');
         })->where('status', 'activo')->with('apprenticeProfile')->get();
 
-        return view('admin.schedules.edit', compact('schedule', 'apprentices'));
+        return view('admin.schedules.edit', compact('schedule', 'phases', 'apprentices'));
     }
 
     /**
@@ -141,23 +164,12 @@ class ScheduleController extends Controller
     public function update(Request $request, Schedule $schedule)
     {
         $validator = Validator::make($request->all(), [
-            'apprentice_id' => 'required|exists:users,id',
+            'technologist_id' => 'required_without:apprentice_id|exists:technologists,id',
+            'apprentice_id' => 'nullable|exists:users,id',
             'weekday' => 'required|integer|between:1,7',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'status' => 'required|in:activo,inactivo',
-        ], [
-            'apprentice_id.required' => 'Debe seleccionar un aprendiz.',
-            'apprentice_id.exists' => 'El aprendiz seleccionado no existe.',
-            'weekday.required' => 'Debe seleccionar un día de la semana.',
-            'weekday.between' => 'El día debe estar entre 1 y 7.',
-            'start_time.required' => 'Debe especificar la hora de inicio.',
-            'start_time.date_format' => 'El formato de hora de inicio no es válido.',
-            'end_time.required' => 'Debe especificar la hora de fin.',
-            'end_time.date_format' => 'El formato de hora de fin no es válido.',
-            'end_time.after' => 'La hora de fin debe ser posterior a la hora de inicio.',
-            'status.required' => 'Debe seleccionar un estado.',
-            'status.in' => 'El estado debe ser activo o inactivo.',
         ]);
 
         if ($validator->fails()) {
@@ -166,21 +178,26 @@ class ScheduleController extends Controller
                 ->withInput();
         }
 
-        // Verificar si ya existe otro horario para este aprendiz en este día
-        $existingSchedule = Schedule::where('apprentice_id', $request->apprentice_id)
-            ->where('weekday', $request->weekday)
+        // Verificar colisión
+        $query = Schedule::where('weekday', $request->weekday)
             ->where('status', 'activo')
-            ->where('id', '!=', $schedule->id)
-            ->first();
+            ->where('id', '!=', $schedule->id);
+            
+        if ($request->technologist_id) {
+            $query->where('technologist_id', $request->technologist_id);
+        } else {
+            $query->where('apprentice_id', $request->apprentice_id);
+        }
 
-        if ($existingSchedule) {
+        if ($query->exists()) {
             return redirect()->back()
-                ->withErrors(['weekday' => 'Ya existe un horario activo para este aprendiz en este día de la semana.'])
+                ->withErrors(['weekday' => 'Ya existe un horario activo para este ' . ($request->technologist_id ? 'tecnólogo' : 'aprendiz') . ' en este día.'])
                 ->withInput();
         }
 
         try {
             $schedule->update([
+                'technologist_id' => $request->technologist_id,
                 'apprentice_id' => $request->apprentice_id,
                 'weekday' => $request->weekday,
                 'start_time' => $request->start_time,
@@ -218,8 +235,16 @@ class ScheduleController extends Controller
     public function getApprenticeSchedules(Request $request)
     {
         $apprenticeId = $request->apprentice_id;
+        $apprentice = User::with('apprenticeProfile')->find($apprenticeId);
+
+        if (!$apprentice) return response()->json([]);
         
-        $schedules = Schedule::where('apprentice_id', $apprenticeId)
+        $schedules = Schedule::where(function($q) use ($apprentice) {
+                $q->where('apprentice_id', $apprentice->id);
+                if ($apprentice->apprenticeProfile?->technologist_id) {
+                    $q->orWhere('technologist_id', $apprentice->apprenticeProfile->technologist_id);
+                }
+            })
             ->where('status', 'activo')
             ->orderBy('weekday')
             ->get();

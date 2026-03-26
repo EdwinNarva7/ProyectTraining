@@ -56,8 +56,8 @@ class RecoveryController extends Controller
             return back()->with('error', 'Tu cuenta se encuentra INACTIVA. Por favor contacta al administrador para reactivarla antes de iniciar jornadas.');
         }
 
-        // 1. Validar si es demasiado pronto (más de 5 minutos antes)
-        if ($now->lt($scheduledStart->copy()->subMinutes(5))) {
+        // 1. Validar ventana de tiempo (espera de hasta 15 minutos similar a jornada normal)
+        if ($now->lt($scheduledStart->copy()->subMinutes(15))) {
             return back()->with('info_alert', 'Aún no es hora de iniciar tu recuperación. El horario programado es de ' . $scheduledStart->format('h:i A') . ' a ' . $scheduledEnd->format('h:i A') . '. Por favor, espera a que llegue la hora establecida.');
         }
 
@@ -74,9 +74,15 @@ class RecoveryController extends Controller
                 ->with('error', '⚠️ JORNADA CANCELADA: Has superado el límite de 4 horas de retraso para iniciar tu jornada (límite: ' . $scheduledStart->copy()->addHours(4)->format('h:i A') . '). Debes solicitar una nueva programación con el administrador.');
         }
 
+        // Determinar hora de inicio efectiva (espera hasta la hora programada si es temprano)
+        $effectiveStart = $now->copy();
+        if ($now->lt($scheduledStart)) {
+            $effectiveStart = $scheduledStart;
+        }
+
         $session->update([
             'status' => 'in_progress',
-            'start_time' => $now
+            'start_time' => $effectiveStart
         ]);
 
         return redirect()->route('apprentice.recovery.show', $session)
@@ -110,23 +116,28 @@ class RecoveryController extends Controller
         $startTime = Carbon::parse($session->start_time);
         $elapsedMinutes = $startTime->diffInMinutes($now);
 
-        // Match the required duration from the request
-        $requiredMinutes = $session->recoveryRequest->hours_requested * 60;
+        // Match the exact programmed duration
+        $scheduledStartDT = \Carbon\Carbon::parse($session->date)->setTimeFrom($session->scheduled_start_time);
+        $scheduledEndDT = \Carbon\Carbon::parse($session->date)->setTimeFrom($session->scheduled_end_time);
+        $requiredMinutes = $scheduledStartDT->diffInMinutes($scheduledEndDT);
 
         if ($elapsedMinutes < $requiredMinutes) {
             return back()->with('error', 'No puedes terminar la sesión aún. Te faltan ' . ceil($requiredMinutes - $elapsedMinutes) . ' minutos para cumplir tu penalización.');
         }
 
+        // Cap the minutes to the required duration (prevent overcounting)
+        $compensatedMinutes = min($elapsedMinutes, $requiredMinutes);
+
         $session->update([
             'status' => 'completed',
             'end_time' => $now,
-            'duration_minutes' => $elapsedMinutes
+            'duration_minutes' => $compensatedMinutes
         ]);
 
         // Update penalty hours accurately
         $penalty = $session->recoveryRequest->penalty;
         $prevAttendedMinutes = $penalty->attended_hours * 60;
-        $newAttendedMinutes = $prevAttendedMinutes + $elapsedMinutes;
+        $newAttendedMinutes = $prevAttendedMinutes + $compensatedMinutes;
 
         $newAttendedHours = $newAttendedMinutes / 60;
         $remainingHours = max(0, $penalty->scheduled_hours - $newAttendedHours);

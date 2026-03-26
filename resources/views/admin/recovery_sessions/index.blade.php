@@ -25,7 +25,7 @@
                 <thead>
                     <tr class="bg-slate-50/50">
                         <th class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] text-center">ID</th>
-                        <th class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Aprendiz</th>
+                        <th class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Colaborador</th>
                         <th class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] text-center">Fecha</th>
                         <th class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Horario</th>
                         <th class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Duración</th>
@@ -43,12 +43,16 @@
                                 <div class="flex items-center gap-4">
                                     <div class="flex-shrink-0 h-11 w-11">
                                         <div
-                                            class="h-11 w-11 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold text-base shadow-sena shadow-md group-hover/item:scale-110 group-hover/item:rotate-3 transition-transform">
-                                            {{ strtoupper(substr($session->apprentice?->name ?? 'A', 0, 1)) }}
+                                            class="h-11 w-11 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold text-base shadow-sena shadow-md group-hover/item:scale-110 group-hover/item:rotate-3 transition-transform overflow-hidden">
+                                            @if($session->apprentice?->profile_photo_path)
+                                                <img src="{{ Storage::url($session->apprentice->profile_photo_path) }}" class="w-full h-full object-cover">
+                                            @else
+                                                {{ strtoupper(substr($session->apprentice?->name ?? 'A', 0, 1)) }}
+                                            @endif
                                         </div>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-bold text-slate-800 mb-0.5">{{ $session->apprentice?->name ?? 'Aprendiz desconocido' }}</p>
+                                        <p class="text-sm font-bold text-slate-800 mb-0.5">{{ $session->apprentice?->name ?? 'Colaborador desconocido' }}</p>
                                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ $session->apprentice?->email ?? '' }}</p>
                                     </div>
                                 </div>

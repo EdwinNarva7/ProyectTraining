@@ -11,9 +11,15 @@ class ScheduleController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $user->load('apprenticeProfile');
 
-        // Obtener los horarios del aprendiz logueado
-        $schedules = Schedule::where('apprentice_id', $user->id)
+        // Obtener los horarios del aprendiz logueado o de su tecnólogo
+        $schedules = Schedule::where(function($q) use ($user) {
+                $q->where('apprentice_id', $user->id);
+                if ($user->apprenticeProfile && $user->apprenticeProfile->technologist_id) {
+                    $q->orWhere('technologist_id', $user->apprenticeProfile->technologist_id);
+                }
+            })
             ->orderBy('weekday', 'asc')
             ->get();
 

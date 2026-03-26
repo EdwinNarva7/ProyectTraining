@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches) }" 
+      x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val)); if(darkMode) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); $watch('darkMode', val => { if(val) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark') })" 
+      :class="{ 'dark': darkMode }">
 
 <head>
     <meta charset="UTF-8">
@@ -131,8 +133,47 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
-            }
-        }
+    </style>
+
+    <style>
+        /* Tema Oscuro Global / Global Dark Mode Override */
+        html.dark body { background-color: #0f172a !important; color: #f1f5f9 !important; }
+        html.dark .bg-slate-50, html.dark .bg-gray-50 { background-color: #0f172a !important; }
+        html.dark .bg-white { background-color: #1e293b !important; }
+        html.dark .bg-slate-100 { background-color: #334155 !important; }
+        
+        html.dark .text-slate-400, html.dark .text-gray-400 { color: #94a3b8 !important; }
+        html.dark .text-slate-500, html.dark .text-gray-500 { color: #cbd5e1 !important; }
+        html.dark .text-slate-600, html.dark .text-gray-600 { color: #e2e8f0 !important; }
+        html.dark .text-slate-700, html.dark .text-gray-700 { color: #f1f5f9 !important; }
+        html.dark .text-slate-800, html.dark .text-slate-900, html.dark .text-gray-800, html.dark .text-gray-900 { color: #f8fafc !important; }
+        
+        html.dark .border-slate-100, html.dark .border-slate-200, html.dark .border-slate-50, html.dark .border-white, html.dark hr { border-color: #334155 !important; }
+        html.dark .hover\:bg-slate-50:hover, html.dark .hover\:bg-white\/5:hover { background-color: #334155 !important; }
+        
+        html.dark .glass-effect { background: rgba(30, 41, 59, 0.8) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
+        html.dark .shadow-xl, html.dark .shadow-lg, html.dark .shadow-md, html.dark .shadow-sm { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5) !important; }
+        
+        /* Componentes de formularios y tablas en vistas hijas */
+        html.dark table { color: #e2e8f0 !important; }
+        html.dark thead, html.dark th { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #334155 !important; }
+        html.dark tbody tr { background-color: #1e293b !important; border-color: #334155 !important; }
+        html.dark tbody tr:hover { background-color: #334155 !important; }
+        html.dark td { border-color: #334155 !important; }
+        
+        html.dark input, html.dark select, html.dark textarea { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #334155 !important; }
+        html.dark input:focus, html.dark select:focus, html.dark textarea:focus { border-color: #39A900 !important; }
+        html.dark .form-control, html.dark .form-select { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #334155 !important; }
+        
+        /* Correcciones para sena colors on dark */
+        html.dark .bg-sena\/10 { background-color: rgba(57, 169, 0, 0.2) !important; }
+        html.dark .text-sena { color: #4ade80 !important; }
+        html.dark .hover\:text-sena:hover { color: #4ade80 !important; }
+        html.dark .bg-sena { background-color: #39A900 !important; color: #ffffff !important;}
+        html.dark .sena-gradient { background: linear-gradient(135deg, #39A900 0%, #2d8500 100%) !important; color: white !important;}
+
+        /* Modal fixes if any */
+        html.dark .swal2-popup { background-color: #1e293b !important; color: #f1f5f9 !important; }
     </style>
 
     @stack('styles')
@@ -152,7 +193,7 @@
 
         <!-- Sidebar -->
         <aside id="sidebar"
-            class="flex flex-col absolute z-50 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-screen overflow-y-auto no-scrollbar w-72 shrink-0 bg-[#0f172a] border-r border-slate-800 transition-all duration-300 ease-in-out shadow-2xl lg:shadow-none"
+            class="flex flex-col absolute z-50 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-screen overflow-y-auto no-scrollbar w-72 shrink-0 bg-white border-r border-slate-100 transition-all duration-300 ease-in-out shadow-2xl lg:shadow-none"
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-72'">
 
             <!-- Sidebar header -->
@@ -166,7 +207,7 @@
                     </svg>
                 </button>
                 <!-- Logo -->
-                <a class="flex items-center gap-3 truncate group" href="{{ route('admin.dashboard') }}">
+                <a class="flex items-center gap-3 truncate group" href="{{ Auth::user()->isGerente() ? route('gerente.dashboard') : route('admin.dashboard') }}">
                     <div
                         class="w-10 h-10 sena-gradient rounded-xl flex items-center justify-center shadow-lg shadow-sena/20 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shrink-0">
                         <span class="text-white font-bold text-xl">S</span>
@@ -185,15 +226,15 @@
                     <ul class="space-y-1.5">
                         <!-- Dashboard -->
                         <li>
-                            <a href="{{ route('admin.dashboard') }}"
-                                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.dashboard*') ? 'bg-sena/10 text-sena shadow-inner' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 group' }}">
+                            <a href="{{ Auth::user()->isGerente() ? route('gerente.dashboard') : route('admin.dashboard') }}"
+                                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.dashboard*') || request()->routeIs('gerente.dashboard*') ? 'bg-sena/10 text-sena shadow-inner' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 group' }}">
                                 <div class="relative">
-                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.dashboard*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"
+                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.dashboard*') || request()->routeIs('gerente.dashboard*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path
                                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                     </svg>
-                                    @if(request()->routeIs('admin.dashboard*'))
+                                    @if(request()->routeIs('admin.dashboard*') || request()->routeIs('gerente.dashboard*'))
                                         <span
                                             class="absolute -top-1 -right-1 w-2 h-2 bg-sena rounded-full animate-ping"></span>
                                     @endif
@@ -203,6 +244,7 @@
                         </li>
 
                         <!-- Usuarios -->
+                        @if(Auth::user()->isAdmin())
                         <li x-data="{ open: {{ request()->routeIs('admin.users.*') ? 'true' : 'false' }} }">
                             <div
                                 class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.users.*') ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
@@ -222,13 +264,13 @@
                                     </svg>
                                 </button>
                             </div>
-                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-800/40" x-show="open"
+                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-100" x-show="open"
                                 x-cloak x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0 text-slate-400">
+                                x-transition:enter-end="opacity-100 translate-y-0">
                                 <li>
                                     <a href="{{ route('admin.users.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.users.index') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.users.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Todos los Usuarios
@@ -236,7 +278,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('admin.users.create') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.users.create') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.users.create') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Registrar Nuevo
@@ -244,50 +286,90 @@
                                 </li>
                             </ul>
                         </li>
+                        @endif
+
+                        <!-- Fases (Cohortes) -->
+                        @if(Auth::user()->isAdmin())
+                        <li x-data="{ open: {{ request()->routeIs('admin.phases.*') ? 'true' : 'false' }} }">
+                            <div
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.phases.*') ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
+                                <a href="{{ route('admin.phases.index') }}"
+                                    class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.phases.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path
+                                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                    <span class="text-sm font-bold transition-opacity duration-300">Fases</span>
+                                </a>
+                                <button @click="open = !open" class="p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-700"
+                                        :class="open ? 'rotate-180 text-sena' : ''" viewBox="0 0 12 12">
+                                        <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-100" x-show="open"
+                                x-cloak x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 -translate-y-2"
+                                x-transition:enter-end="opacity-100 translate-y-0">
+                                <li>
+                                    <a href="{{ route('admin.phases.index') }}"
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.phases.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
+                                        <span
+                                            class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
+                                        Gestionar Fases
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.phases.create') }}"
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.phases.create') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
+                                        <span
+                                            class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
+                                        Crear Fase
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        @endif
 
                         <!-- Asistencia -->
+                        @if(Auth::user()->isAdmin())
                         <li x-data="{ open: {{ request()->routeIs('admin.attendance.*') ? 'true' : 'false' }} }">
                             <div
-                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.attendance.*') ? 'bg-sena/10 text-sena' : 'text-slate-400 hover:bg-white/5 group sidebar-item-hover' }}">
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.attendance.*') ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
                                 <a href="{{ route('admin.attendance.index') }}"
                                     class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
-                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.attendance.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-300' }}"
+                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.attendance.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path
                                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                     </svg>
                                     <span class="text-sm font-bold transition-opacity duration-300">Asistencia</span>
                                 </a>
-                                <button @click="open = !open" class="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-600"
+                                <button @click="open = !open" class="p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-700"
                                         :class="open ? 'rotate-180 text-sena' : ''" viewBox="0 0 12 12">
                                         <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" fill="currentColor" />
                                     </svg>
                                 </button>
                             </div>
-                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-800/40" x-show="open"
+                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-100" x-show="open"
                                 x-cloak x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0 text-slate-400">
+                                x-transition:enter-end="opacity-100 translate-y-0">
                                 <li>
                                     <a href="{{ route('admin.attendance.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.index') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Panel de Control
                                     </a>
                                 </li>
-                                <li>
-                                    <a href="{{ route('admin.attendance.logs') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.logs') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
-                                        <span
-                                            class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
-                                        Logs de Registros
-                                    </a>
-                                </li>
+
                                 <li>
                                     <a href="{{ route('admin.attendance.detailed-report') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.detailed-report') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.detailed-report') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Reporte Detallado
@@ -295,7 +377,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('admin.attendance.sessions') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.sessions') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.attendance.sessions') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Sesiones
@@ -303,34 +385,36 @@
                                 </li>
                             </ul>
                         </li>
+                        @endif
 
                         <!-- Horarios -->
+                        @if(Auth::user()->isAdmin())
                         <li x-data="{ open: {{ request()->routeIs('admin.schedules.*') ? 'true' : 'false' }} }">
                             <div
-                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.schedules.*') ? 'bg-sena/10 text-sena' : 'text-slate-400 hover:bg-white/5 group sidebar-item-hover' }}">
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.schedules.*') ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
                                 <a href="{{ route('admin.schedules.index') }}"
                                     class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
-                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.schedules.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-300' }}"
+                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.schedules.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path
                                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                     <span class="text-sm font-bold transition-opacity duration-300">Horarios</span>
                                 </a>
-                                <button @click="open = !open" class="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-600"
+                                <button @click="open = !open" class="p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-700"
                                         :class="open ? 'rotate-180 text-sena' : ''" viewBox="0 0 12 12">
                                         <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" fill="currentColor" />
                                     </svg>
                                 </button>
                             </div>
-                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-800/40" x-show="open"
+                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-100" x-show="open"
                                 x-cloak x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0 text-slate-400">
+                                x-transition:enter-end="opacity-100 translate-y-0">
                                 <li>
                                     <a href="{{ route('admin.schedules.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.schedules.index') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.schedules.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Ver Registros
@@ -338,7 +422,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('admin.schedules.create') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.schedules.create') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.schedules.create') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Asignar Horario
@@ -346,9 +430,11 @@
                                 </li>
                             </ul>
                         </li>
+                        @endif
 
                         <!-- Otros Menús (Certificados, Recuperación) ... mantenemos la estructura pero aplicamos el estilo dark -->
                         <!-- Certificados -->
+                        @if(Auth::user()->isAdmin())
                         <li x-data="{ open: {{ request()->routeIs('admin.certificates.*') ? 'true' : 'false' }} }">
                             <div
                                 class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.certificates.*') ? 'bg-sena/10 text-sena' : 'text-slate-400 hover:bg-white/5 group sidebar-item-hover' }}">
@@ -382,35 +468,55 @@
                                 </li>
                             </ul>
                         </li>
+                        @endif
 
-                        <!-- Recuperación de Horas -->
-                        <li
-                            x-data="{ open: {{ request()->routeIs('admin.penalties.*') || request()->routeIs('admin.recovery-requests.*') || request()->routeIs('admin.recovery-sessions.*') ? 'true' : 'false' }} }">
+                        <!-- Cumplimiento -->
+                        @if(Auth::user()->isAdmin())
+                        <li x-data="{ open: {{ request()->routeIs('admin.reports.hours') ? 'true' : 'false' }} }">
                             <div
-                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.penalties.*') || request()->routeIs('admin.recovery-requests.*') || request()->routeIs('admin.recovery-sessions.*') ? 'bg-sena/10 text-sena' : 'text-slate-400 hover:bg-white/5 group sidebar-item-hover' }}">
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.reports.hours') ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
+                                <a href="{{ route('admin.reports.hours') }}"
+                                    class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
+                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.reports.hours') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-sm font-bold transition-opacity duration-300">Control de Horas</span>
+                                </a>
+                            </div>
+                        </li>
+                        @endif
+
+                        <!-- Recuperación -->
+                        @if(Auth::user()->isAdmin() || Auth::user()->isGerente())
+                        <li
+                            x-data="{ open: {{ (request()->routeIs('admin.penalties.*') || request()->routeIs('admin.recovery-requests.*') || request()->routeIs('admin.recovery-sessions.*')) ? 'true' : 'false' }} }">
+                            <div
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ (request()->routeIs('admin.penalties.*') || request()->routeIs('admin.recovery-requests.*') || request()->routeIs('admin.recovery-sessions.*')) ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
                                 <a href="{{ route('admin.penalties.index') }}"
                                     class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
-                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ request()->routeIs('admin.penalties.*') || request()->routeIs('admin.recovery-requests.*') || request()->routeIs('admin.recovery-sessions.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-300' }}"
+                                    <svg class="shrink-0 w-6 h-6 transition-colors {{ (request()->routeIs('admin.penalties.*') || request()->routeIs('admin.recovery-requests.*') || request()->routeIs('admin.recovery-sessions.*')) ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                                        <path
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
-                                    <span class="text-sm font-bold transition-opacity duration-300">Recuperación</span>
+                                    <span class="text-sm font-bold transition-opacity duration-300">Cumplimiento</span>
                                 </a>
-                                <button @click="open = !open" class="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-600"
+                                <button @click="open = !open" class="p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-700"
                                         :class="open ? 'rotate-180 text-sena' : ''" viewBox="0 0 12 12">
                                         <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" fill="currentColor" />
                                     </svg>
                                 </button>
                             </div>
-                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-800/40" x-show="open"
+                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-100" x-show="open"
                                 x-cloak x-transition:enter="transition ease-out duration-200"
                                 x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0 text-slate-400">
+                                x-transition:enter-end="opacity-100 translate-y-0">
                                 <li>
                                     <a href="{{ route('admin.penalties.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.penalties.index') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.penalties.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Penalizaciones
@@ -418,7 +524,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('admin.recovery-requests.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.recovery-requests.index') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.recovery-requests.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Solicitudes
@@ -426,7 +532,7 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('admin.recovery-sessions.index') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.recovery-sessions.index') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
+                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.recovery-sessions.index') ? 'text-sena' : 'text-slate-500 hover:text-slate-900' }} transition-all">
                                         <span
                                             class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
                                         Sesiones
@@ -434,47 +540,22 @@
                                 </li>
                             </ul>
                         </li>
+                        @endif
 
                         <!-- Huella Digital -->
+                        @if(Auth::user()->isAdmin())
                         <li x-data="{ open: {{ request()->routeIs('admin.fingerprint.*') ? 'true' : 'false' }} }">
                             <div
-                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.fingerprint.*') ? 'bg-sena/10 text-sena' : 'text-slate-400 hover:bg-white/5 group sidebar-item-hover' }}">
-                                <a href="{{ route('admin.fingerprint.scanner') }}"
+                                class="flex items-center justify-between gap-1 pr-2 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.fingerprint.*') ? 'bg-sena/10 text-sena' : 'text-slate-600 hover:bg-slate-50 group' }}">
+                                <a href="{{ route('admin.fingerprint.enroll') }}"
                                     class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300">
                                     <i
-                                        class="fas fa-fingerprint w-6 h-6 flex items-center justify-center transition-colors {{ request()->routeIs('admin.fingerprint.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
-                                    <span class="text-sm font-bold transition-opacity duration-300">Huella
-                                        Digital</span>
+                                        class="fas fa-fingerprint w-6 h-6 flex items-center justify-center transition-colors {{ request()->routeIs('admin.fingerprint.*') ? 'text-sena' : 'text-slate-500 group-hover:text-slate-700' }}"></i>
+                                    <span class="text-sm font-bold transition-opacity duration-300">Gestión de Huellas</span>
                                 </a>
-                                <button @click="open = !open" class="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                    <svg class="w-3 h-3 transition-transform duration-300 text-slate-600"
-                                        :class="open ? 'rotate-180 text-sena' : ''" viewBox="0 0 12 12">
-                                        <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" fill="currentColor" />
-                                    </svg>
-                                </button>
                             </div>
-                            <ul class="ml-7 pl-7 mt-2 space-y-1 mb-2 border-l-2 border-slate-800/40" x-show="open"
-                                x-cloak x-transition:enter="transition ease-out duration-200"
-                                x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0 text-slate-400">
-                                <li>
-                                    <a href="{{ route('admin.fingerprint.scanner') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.fingerprint.scanner') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
-                                        <span
-                                            class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
-                                        Escáner
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('admin.fingerprint.enroll') }}"
-                                        class="group flex items-center py-2 text-[11px] font-bold {{ request()->routeIs('admin.fingerprint.enroll') ? 'text-sena' : 'text-slate-500 hover:text-white' }} transition-all">
-                                        <span
-                                            class="w-1.5 h-1.5 rounded-full mr-3 border border-current opacity-40 group-hover:bg-current group-hover:opacity-100 transition-all"></span>
-                                        Enrolamiento
-                                    </a>
-                                </li>
-                            </ul>
                         </li>
+                        @endif
                     </ul>
                 </div>
             </div>
@@ -506,6 +587,45 @@
 
                     <!-- Right Side Header -->
                     <div class="flex items-center gap-3">
+                        <!-- Theme Toggle Button -->
+                        <div class="relative group">
+                            <button @click="darkMode = !darkMode" 
+                                class="w-10 h-10 flex items-center justify-center bg-white border border-slate-100 hover:border-sena/30 rounded-xl text-slate-400 transition-all hover:shadow-lg active:scale-90 relative"
+                                title="Cambiar tema oscro/claro">
+                                <!-- Sun icon -->
+                                <svg x-show="!darkMode" class="w-5 h-5 group-hover:text-yellow-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                <!-- Moon icon -->
+                                <svg x-show="darkMode" class="w-5 h-5 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Support Dropdown -->
+                        <div class="relative group" x-data="{ supportMenu: false }">
+                            <button @click="supportMenu = !supportMenu"
+                                class="flex items-center gap-2 px-3 py-2 bg-white border border-slate-100 hover:border-sena/30 rounded-xl text-slate-500 hover:text-sena transition-all hover:shadow-md">
+                                <i class="far fa-question-circle"></i>
+                                <span class="text-sm font-bold hidden sm:block">Soporte</span>
+                            </button>
+                            <div class="absolute top-full right-0 w-48 bg-white border border-slate-100 shadow-xl rounded-2xl mt-2 p-2 z-50 overflow-hidden"
+                                x-show="supportMenu" x-cloak x-transition @click.outside="supportMenu = false">
+                                <a href="{{ asset('docs/Plantilla Manual Usuario Sistema.pdf') }}" target="_blank"
+                                    class="flex items-center gap-3 px-3 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-sena rounded-lg transition-all">
+                                    <i class="fas fa-book opacity-50 text-base"></i>
+                                    Manual Usuario
+                                </a>
+                                <div class="my-1 border-t border-slate-50"></div>
+                                <a href="{{ asset('docs/Plantilla del Manual Tecnico.pdf') }}" target="_blank"
+                                    class="flex items-center gap-3 px-3 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-sena rounded-lg transition-all">
+                                    <i class="fas fa-file-code opacity-50 text-base"></i>
+                                    Manual Técnico
+                                </a>
+                            </div>
+                        </div>
+
                         <!-- Notifications -->
                         <div class="relative group">
                             <button
@@ -528,15 +648,19 @@
                             <button @click="userMenu = !userMenu"
                                 class="flex items-center gap-3 group px-2 py-1.5 rounded-xl hover:bg-white transition-all hover:shadow-md border border-transparent hover:border-slate-100">
                                 <div
-                                    class="w-9 h-9 rounded-xl sena-gradient flex items-center justify-center text-white font-bold text-sm shadow-sena">
-                                    {{ substr(Auth::user()->name, 0, 1) }}
+                                    class="w-9 h-9 rounded-xl sena-gradient flex items-center justify-center text-white font-bold text-sm shadow-sena overflow-hidden">
+                                    @if(Auth::user()->profile_photo_path)
+                                        <img src="{{ Storage::url(Auth::user()->profile_photo_path) }}" class="w-full h-full object-cover">
+                                    @else
+                                        {{ substr(Auth::user()->name, 0, 1) }}
+                                    @endif
                                 </div>
                                 <div class="text-left hidden sm:block">
                                     <p class="text-[12px] font-bold text-slate-800 leading-none mb-0.5">
                                         {{ Auth::user()->name }}
                                     </p>
                                     <p class="text-[10px] font-bold text-sena uppercase tracking-wider opacity-80">
-                                        Administrador</p>
+                                        {{ Auth::user()->isGerente() ? 'Gerente' : 'Administrador' }}</p>
                                 </div>
                                 <svg class="w-3 h-3 text-slate-400 transition-transform duration-300"
                                     :class="userMenu ? 'rotate-180 text-sena' : ''" viewBox="0 0 12 12">
@@ -579,7 +703,7 @@
                     <!-- Breadcrumbs -->
                     <div
                         class="flex items-center gap-2 mb-8 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                        <a href="{{ route('admin.dashboard') }}" class="hover:text-sena transition-colors">Sistema</a>
+                        <a href="{{ Auth::user()->isGerente() ? route('gerente.dashboard') : route('admin.dashboard') }}" class="hover:text-sena transition-colors">Sistema</a>
                         @yield('breadcrumb')
                     </div>
 

@@ -249,21 +249,6 @@
                 </div>
 
                 {{-- Help Card --}}
-                <div class="bg-indigo-600 rounded-[3.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
-                    <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
-                    <div class="relative z-10 space-y-6">
-                        <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
-                            <i class="fas fa-graduation-cap text-2xl"></i>
-                        </div>
-                        <div class="space-y-2">
-                            <h3 class="text-2xl font-black font-outfit tracking-tighter">¿Necesitas Ayuda?</h3>
-                            <p class="text-indigo-100 text-sm font-medium leading-relaxed">Si tienes dudas sobre tus registros de asistencia o deudas de horas, contacta a tu instructor encargado.</p>
-                        </div>
-                        <button class="px-8 py-3 bg-white text-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:shadow-xl transition-all">
-                            Preguntas Frecuentes
-                        </button>
-                    </div>
-                </div>
 
             </div>
         </div>

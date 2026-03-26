@@ -33,6 +33,11 @@ class RedirectBasedOnRole
             if ($user->isAdmin()) {
                 return redirect()->route('admin.dashboard');
             }
+
+            // Si el usuario es gerente, redirigir directo a su dashboard
+            if ($user->isGerente()) {
+                return redirect()->route('gerente.dashboard');
+            }
         }
 
         return $next($request);

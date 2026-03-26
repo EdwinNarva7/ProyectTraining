@@ -17,11 +17,11 @@
                 <p class="text-slate-500 font-medium font-outfit">Control y seguimiento a la duración de las jornadas de formación.</p>
             </div>
             <div class="flex gap-4">
-                <button onclick="exportSessions()"
-                    class="btn-primary-unified flex items-center gap-2 px-6 py-3 shadow-sena">
-                    <i class="fas fa-file-export"></i>
-                    Exportar Reporte
-                </button>
+                <a href="{{ route('admin.reports.sessions-pdf') }}"
+                    class="inline-flex items-center px-6 py-3 bg-slate-900 border border-slate-800 text-white font-bold rounded-2xl shadow-xl shadow-slate-200 hover:bg-slate-800 hover:-translate-y-1 transition-all group">
+                    <i class="fas fa-file-pdf mr-2 text-rose-400 group-hover:scale-110 transition-transform"></i>
+                    Exportar PDF por Fase
+                </a>
             </div>
         </div>
     </div>
@@ -205,8 +205,12 @@
                             <td class="px-8 py-6">
                                 @if(isset($session->apprentice))
                                     <div class="flex items-center gap-4">
-                                        <div class="w-12 h-12 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold shadow-sena shadow-md group-hover/item:scale-110 group-hover/item:rotate-3 transition-transform">
-                                            {{ strtoupper(substr($session->apprentice->full_name ?? 'U', 0, 1)) }}
+                                        <div class="w-12 h-12 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold shadow-sena shadow-md group-hover/item:scale-110 group-hover/item:rotate-3 transition-transform overflow-hidden">
+                                            @if($session->apprentice?->profile_photo_path)
+                                                <img src="{{ Storage::url($session->apprentice->profile_photo_path) }}" class="w-full h-full object-cover">
+                                            @else
+                                                {{ strtoupper(substr($session->apprentice->full_name ?? 'U', 0, 1)) }}
+                                            @endif
                                         </div>
                                         <div>
                                             <p class="text-sm font-bold text-slate-800 mb-0.5">{{ $session->apprentice->full_name ?? 'Aprendiz' }}</p>
@@ -426,38 +430,6 @@
             }
         }
 
-        function exportSessions() {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Exportando...',
-                    text: 'Preparando su archivo CSV',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                // Simulate export - replace with actual export endpoint
-                setTimeout(() => {
-                    const currentUrl = new URL(window.location.href);
-                    currentUrl.searchParams.set('export', 'csv');
-
-                    const link = document.createElement('a');
-                    link.href = currentUrl.toString();
-                    link.download = 'attendance_sessions_' + new Date().toISOString().split('T')[0] + '.csv';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-
-                    Swal.fire({
-                        title: '¡Éxito!',
-                        text: 'Su archivo ha sido exportado',
-                        icon: 'success',
-                        confirmButtonColor: '#10B981',
-                        timer: 2000
-                    });
-                }, 1000);
-            }
-        }
+        // PDF export is handled server-side via the route admin.reports.sessions-pdf
     </script>
 @endpush

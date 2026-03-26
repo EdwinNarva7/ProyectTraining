@@ -19,9 +19,10 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Obtener el rol de administrador
+        // Obtener los roles
         $adminRole = Role::where('name', 'Administrador')->first();
         $apprenticeRole = Role::where('name', 'Aprendiz')->first();
+        $gerenteRole = Role::where('name', 'Gerente')->first();
 
         // Crear usuario administrador
         User::firstOrCreate(
@@ -33,6 +34,19 @@ class UserSeeder extends Seeder
                 'status' => 'activo'
             ]
         );
+
+        // Crear usuario gerente
+        if ($gerenteRole) {
+            User::firstOrCreate(
+                ['email' => 'gerente@siap.com'],
+                [
+                    'role_id' => $gerenteRole->id,
+                    'full_name' => 'Gerente Principal',
+                    'password' => Hash::make('password'),
+                    'status' => 'activo'
+                ]
+            );
+        }
 
         // Crear algunos aprendices de ejemplo
         $apprentices = [

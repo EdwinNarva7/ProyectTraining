@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role.redirect' => \App\Http\Middleware\RedirectBasedOnRole::class,
             'admin.only' => \App\Http\Middleware\AdminOnly::class,
+            'admin_or_gerente' => \App\Http\Middleware\AdminOrGerente::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

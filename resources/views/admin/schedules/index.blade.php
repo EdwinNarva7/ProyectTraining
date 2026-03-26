@@ -35,7 +35,7 @@
                 <span class="text-[10px] font-bold text-blue-500 bg-blue-50 px-3 py-1 rounded-lg uppercase tracking-wider">Total</span>
             </div>
             <div>
-                <h3 class="text-3xl font-bold text-slate-800 font-outfit mb-1">{{ count($schedules ?? []) }}</h3>
+                <h3 class="text-3xl font-bold text-slate-800 font-outfit mb-1">{{ $schedules->total() }}</h3>
                 <p class="text-sm text-slate-400 font-medium italic">Horarios registrados</p>
             </div>
         </div>
@@ -48,7 +48,7 @@
                 <span class="text-[10px] font-bold text-sena bg-sena/10 px-3 py-1 rounded-lg uppercase tracking-wider">Activos</span>
             </div>
             <div>
-                <h3 class="text-3xl font-bold text-slate-800 font-outfit mb-1">{{ collect($schedules)->where('status', 'activo')->count() }}</h3>
+                <h3 class="text-3xl font-bold text-slate-800 font-outfit mb-1">{{ $schedules->where('status', 'activo')->count() }}</h3>
                 <p class="text-sm text-slate-400 font-medium italic">En vigencia</p>
             </div>
         </div>
@@ -61,23 +61,27 @@
         <form method="GET" action="{{ route('admin.schedules.index') }}"
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
             <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Aprendiz</label>
-                <select name="apprentice_id"
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Tecnólogo</label>
+                <select name="technologist_id"
                     class="form-input-tailwind w-full pl-5 pr-10 py-3 rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white transition-all appearance-none cursor-pointer">
-                    <option value="">Todos los Aprendices</option>
-                    @foreach($apprentices as $apprentice)
-                        <option value="{{ $apprentice->id }}" {{ request('apprentice_id') == $apprentice->id ? 'selected' : '' }}>
-                            {{ $apprentice->full_name }}
-                        </option>
+                    <option value="">Todos los Tecnólogos</option>
+                    @foreach($phases as $phase)
+                        <optgroup label="{{ $phase->name }}">
+                            @foreach($phase->technologists as $tech)
+                                <option value="{{ $tech->id }}" {{ request('technologist_id') == $tech->id ? 'selected' : '' }}>
+                                    {{ $tech->name }}
+                                </option>
+                            @endforeach
+                        </optgroup>
                     @endforeach
                 </select>
             </div>
 
             <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Día de la Semana</label>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Día</label>
                 <select name="weekday"
                     class="form-input-tailwind w-full pl-5 pr-10 py-3 rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white transition-all appearance-none cursor-pointer">
-                    <option value="">Todos los Días</option>
+                    <option value="">Cualquier Día</option>
                     @php($days = [1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles', 4 => 'Jueves', 5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo'])
                     @foreach($days as $num => $label)
                         <option value="{{ $num }}" {{ request('weekday') == $num ? 'selected' : '' }}>{{ $label }}</option>
@@ -89,7 +93,7 @@
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Estado</label>
                 <select name="status"
                     class="form-input-tailwind w-full pl-5 pr-10 py-3 rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white transition-all appearance-none cursor-pointer">
-                    <option value="">Todos los Estados</option>
+                    <option value="">Todos</option>
                     <option value="activo" {{ request('status') == 'activo' ? 'selected' : '' }}>Activo</option>
                     <option value="inactivo" {{ request('status') == 'inactivo' ? 'selected' : '' }}>Inactivo</option>
                 </select>
@@ -116,7 +120,7 @@
             <table class="w-full text-left">
                 <thead>
                     <tr class="bg-slate-50/50">
-                        <th class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Aprendiz</th>
+                        <th class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Tecnólogo / Programa</th>
                         <th class="px-8 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Programación</th>
                         <th class="px-8 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Estado</th>
                         <th class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Registrado</th>
@@ -128,14 +132,14 @@
                         <tr class="group/item hover:bg-slate-50/80 transition-all duration-200">
                             <td class="px-8 py-6">
                                 <div class="flex items-center gap-4">
-                                    <div class="h-12 w-12 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold text-lg shadow-sena shadow-md transition-transform group-hover/item:scale-110 group-hover/item:rotate-3">
-                                        {{ strtoupper(substr($schedule?->apprentice?->full_name ?? 'N', 0, 1)) }}
+                                    <div class="h-12 w-12 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold text-lg shadow-sena shadow-md transition-transform group-hover/item:scale-110 group-hover/item:rotate-3 overflow-hidden">
+                                        <i class="fas fa-graduation-cap"></i>
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold text-slate-800 mb-0.5">
-                                            {{ $schedule->apprentice->full_name ?? 'N/A' }}
+                                            {{ $schedule->technologist ? $schedule->technologist->name : ($schedule->apprentice ? $schedule->apprentice->full_name : 'No asignado') }}
                                         </p>
-                                        <p class="text-xs text-slate-400 font-medium italic">{{ $schedule->apprentice->email ?? 'N/A' }}</p>
+                                        <p class="text-xs text-slate-400 font-medium italic">Fase: {{ $schedule->technologist?->phase?->name ?? 'Horario Individual' }}</p>
                                     </div>
                                 </div>
                             </td>

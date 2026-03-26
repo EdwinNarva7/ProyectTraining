@@ -26,7 +26,7 @@
             <table class="w-full text-left">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-100">
-                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Aprendiz</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Colaborador</th>
                         <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Fecha
                             Solicitada</th>
                         <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Horas a
@@ -44,11 +44,15 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-3">
                                     <div
-                                        class="w-10 h-10 rounded-full sena-gradient flex items-center justify-center text-white font-black text-xs">
-                                        {{ strtoupper(substr(($req->apprentice?->name ?? 'A'), 0, 1)) }}
+                                        class="w-10 h-10 rounded-full sena-gradient flex items-center justify-center text-white font-black text-xs overflow-hidden">
+                                        @if($req->apprentice?->profile_photo_path)
+                                            <img src="{{ Storage::url($req->apprentice->profile_photo_path) }}" class="w-full h-full object-cover">
+                                        @else
+                                            {{ strtoupper(substr(($req->apprentice?->name ?? 'A'), 0, 1)) }}
+                                        @endif
                                     </div>
                                     <div>
-                                        <div class="text-sm font-bold text-slate-800">{{ $req->apprentice?->name ?? 'Aprendiz sin nombre' }}</div>
+                                        <div class="text-sm font-bold text-slate-800">{{ $req->apprentice?->name ?? 'Colaborador sin nombre' }}</div>
                                         <div class="text-xs text-slate-400 font-medium">Enviada:
                                             {{ $req->created_at->diffForHumans() }}
                                         </div>

@@ -16,7 +16,7 @@
                     <p class="text-slate-500 font-medium font-outfit text-lg">Panel de control avanzado para el seguimiento institucional en tiempo real.</p>
                 </div>
                 <div class="flex gap-4">
-                    <a href="{{ route('admin.attendance.logs') }}"
+                    <a href="{{ route('admin.attendance.detailed-report') }}"
                         class="btn-primary-unified flex items-center gap-2 px-6 py-4 shadow-sena group">
                         <i class="fas fa-list-ul group-hover:rotate-12 transition-transform"></i>
                         Ver Historial Completo
@@ -89,16 +89,49 @@
             <!-- Weekly Attendance Chart -->
             <div class="lg:col-span-2 bg-white rounded-[2.5rem] shadow-premium border border-slate-100 overflow-hidden group">
                 <div class="p-8 border-b border-slate-50">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shadow-inner group-hover:scale-110 transition-transform">
-                                <i class="fas fa-chart-line text-xl"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-bold text-slate-800 font-outfit">Asistencia Semanal</h2>
-                                <p class="text-sm text-slate-500 font-medium">Progreso porcentual de los últimos 7 días</p>
+                    <div class="flex flex-col gap-5">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shadow-inner group-hover:scale-110 transition-transform">
+                                    <i class="fas fa-chart-line text-xl"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-slate-800 font-outfit">Asistencia Semanal</h2>
+                                    <p class="text-sm text-slate-500 font-medium">Progreso porcentual de los últimos 7 días</p>
+                                </div>
                             </div>
                         </div>
+
+                        {{-- PDF Report Filter Panel --}}
+                        <form id="chartPdfForm" action="{{ route('admin.reports.attendance-chart-pdf') }}" method="GET"
+                              class="flex flex-wrap items-end gap-3 p-4 bg-slate-50/70 rounded-2xl border border-slate-100">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400">Tipo de Reporte</label>
+                                <select name="type" id="chartType"
+                                    onchange="togglePhaseSelect()"
+                                    class="pl-3 pr-8 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 appearance-none cursor-pointer focus:ring-2 focus:ring-sena/20">
+                                    <option value="weekly">Últimos 7 días</option>
+                                    <option value="phase">Por Fase Completa</option>
+                                </select>
+                            </div>
+
+                            <div id="phaseSelectWrap" class="flex flex-col gap-1 hidden">
+                                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400">Seleccionar Fase</label>
+                                <select name="phase_id" id="chartPhaseId"
+                                    class="pl-3 pr-8 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 appearance-none cursor-pointer focus:ring-2 focus:ring-sena/20">
+                                    <option value="">Elegir fase...</option>
+                                    @foreach($phases as $phase)
+                                        <option value="{{ $phase->id }}">{{ $phase->name }} {{ $phase->is_active ? '(Activa)' : '' }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <button type="submit"
+                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all shadow-md">
+                                <i class="fas fa-file-pdf text-rose-400"></i>
+                                Exportar PDF
+                            </button>
+                        </form>
                     </div>
                 </div>
                 <div class="p-8 bg-gradient-to-b from-white to-slate-50/50">
@@ -161,6 +194,58 @@
                 </div>
             </div>
         </div>
+
+        {{-- Reporte por Aprendiz / Fase --}}
+        <div class="bg-white rounded-[2.5rem] shadow-premium border border-slate-100 overflow-hidden group mb-12">
+            <div class="p-8 border-b border-slate-50 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600 shadow-inner group-hover:scale-110 transition-transform">
+                        <i class="fas fa-user-chart text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800 font-outfit">Reporte Individual por Aprendiz</h2>
+                        <p class="text-sm text-slate-500 font-medium">Días asistidos, días ausentes y fechas exactas de inasistencia por cada colaborador de la fase.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-8">
+                <form action="{{ route('admin.reports.apprentice-attendance-pdf') }}" method="GET"
+                      class="flex flex-wrap items-end gap-4">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[9px] font-black uppercase tracking-widest text-slate-400">Seleccionar Fase</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="fas fa-layer-group text-sm"></i>
+                            </div>
+                            <select name="phase_id" required
+                                class="pl-10 pr-8 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-700 appearance-none cursor-pointer focus:ring-2 focus:ring-sena/20 focus:border-sena transition-all min-w-[260px]">
+                                <option value="">Elegir fase para el reporte...</option>
+                                @foreach($phases as $phase)
+                                    <option value="{{ $phase->id }}">
+                                        {{ $phase->name }}
+                                        {{ $phase->is_active ? '— Activa' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white text-sm font-bold rounded-2xl hover:bg-slate-800 hover:-translate-y-1 transition-all shadow-xl shadow-slate-200 group/btn">
+                        <i class="fas fa-file-pdf text-rose-400 group-hover/btn:scale-110 transition-transform"></i>
+                        Generar Reporte PDF
+                    </button>
+
+                    <p class="text-xs text-slate-400 font-medium self-center">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Incluye ranking general, días específicos de ausencia y estado de cada aprendiz.
+                    </p>
+                </form>
+            </div>
+        </div>
 @endsection
 
 @push('scripts')
@@ -171,6 +256,16 @@
             fetchWeeklyDataAndRender();
             setInterval(fetchWeeklyDataAndRender, 60000);
         });
+
+        function togglePhaseSelect() {
+            const type = document.getElementById('chartType').value;
+            const wrap = document.getElementById('phaseSelectWrap');
+            if (type === 'phase') {
+                wrap.classList.remove('hidden');
+            } else {
+                wrap.classList.add('hidden');
+            }
+        }
 
         let attendanceChart;
         function initAttendanceChart() {

@@ -17,11 +17,6 @@
                 <p class="text-slate-500 font-medium font-outfit">Análisis exhaustivo y estadísticas de cumplimiento institucional.</p>
             </div>
             <div class="flex flex-wrap gap-4">
-                <button onclick="exportToExcel()"
-                    class="btn-primary-unified flex items-center gap-2 px-6 py-3 shadow-sena group">
-                    <i class="fas fa-file-excel group-hover:scale-110 transition-transform"></i>
-                    Exportar Excel
-                </button>
                 <button onclick="exportToPdf()"
                     class="inline-flex items-center px-6 py-3 bg-slate-900 border border-slate-800 text-white font-bold rounded-2xl shadow-xl shadow-slate-200 hover:bg-slate-800 hover:-translate-y-1 transition-all group">
                     <i class="fas fa-file-pdf mr-2 text-rose-400 group-hover:scale-110 transition-transform"></i>
@@ -46,7 +41,7 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <div>
-                    <h3 class="text-3xl font-bold text-slate-800 font-outfit tracking-tight">{{ number_format($totalHours, 1) }}h</h3>
+                    <h3 class="text-3xl font-bold text-slate-800 font-outfit tracking-tight">{{ floor($totalHours / 60) }}h {{ $totalHours % 60 }}m</h3>
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Horas Totales</p>
                 </div>
             </div>
@@ -221,8 +216,12 @@
                             <tr class="hover:bg-slate-50/50 transition-all group">
                                 <td class="px-8 py-6">
                                     <div class="flex items-center gap-4">
-                                        <div class="w-12 h-12 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold shadow-sena shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform">
-                                            {{ strtoupper(substr($row['apprentice']->full_name, 0, 1)) }}
+                                        <div class="w-12 h-12 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold shadow-sena shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform overflow-hidden">
+                                            @if($row['apprentice']->profile_photo_path)
+                                                <img src="{{ Storage::url($row['apprentice']->profile_photo_path) }}" class="w-full h-full object-cover">
+                                            @else
+                                                {{ strtoupper(substr($row['apprentice']->full_name, 0, 1)) }}
+                                            @endif
                                         </div>
                                         <div>
                                             <p class="text-sm font-bold text-slate-800 mb-0.5">{{ $row['apprentice']->full_name }}</p>
@@ -255,7 +254,7 @@
                                 <td class="px-8 py-6">
                                     <div class="flex flex-col">
                                         <span class="text-lg font-bold text-indigo-600 tracking-tight leading-none mb-1">
-                                            {{ number_format($row['hours_worked'], 1) }}<span class="text-[10px] ml-0.5">h</span>
+                                            {{ $row['apprentice']->formatMinutesToHours($row['hours_worked']) }}
                                         </span>
                                         <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Tiempo Efectivo</span>
                                     </div>

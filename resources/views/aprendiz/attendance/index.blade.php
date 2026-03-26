@@ -245,43 +245,6 @@
 
             </div>
         </div>
-
-        {{-- Bottom Quick Access Navigation --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <a href="{{ route('apprentice.attendance.logs') }}"
-                class="bg-white p-8 rounded-[3rem] shadow-premium border border-slate-50 flex items-center justify-between hover:bg-slate-50 hover:scale-[1.01] transition-all group overflow-hidden relative">
-                <div class="absolute right-0 top-0 w-32 h-full sena-gradient opacity-0 group-hover:opacity-5 transition-opacity duration-700"></div>
-                <div class="flex items-center gap-6">
-                    <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:bg-slate-900 group-hover:text-white">
-                        <i class="fas fa-list-check text-xl"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-lg font-black text-slate-800 font-outfit uppercase tracking-tight">Bitácora Detallada</h4>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Historial completo de entradas y salidas</p>
-                    </div>
-                </div>
-                <div class="w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center text-slate-300 group-hover:bg-sena group-hover:text-white group-hover:border-sena transition-all">
-                    <i class="fas fa-arrow-right text-xs"></i>
-                </div>
-            </a>
-
-            <a href="{{ route('apprentice.attendance.sessions') }}"
-                class="bg-white p-8 rounded-[3rem] shadow-premium border border-slate-50 flex items-center justify-between hover:bg-slate-50 hover:scale-[1.01] transition-all group overflow-hidden relative">
-                <div class="absolute right-0 top-0 w-32 h-full sena-gradient opacity-0 group-hover:opacity-5 transition-opacity duration-700"></div>
-                <div class="flex items-center gap-6">
-                    <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:bg-slate-900 group-hover:text-white">
-                        <i class="fas fa-folder-tree text-xl"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-lg font-black text-slate-800 font-outfit uppercase tracking-tight">Sesiones de Formación</h4>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resumen de cumplimiento por jornada</p>
-                    </div>
-                </div>
-                <div class="w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center text-slate-300 group-hover:bg-sena group-hover:text-white group-hover:border-sena transition-all">
-                    <i class="fas fa-arrow-right text-xs"></i>
-                </div>
-            </a>
-        </div>
     </div>
 @endsection
 

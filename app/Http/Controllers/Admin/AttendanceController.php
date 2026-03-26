@@ -57,6 +57,8 @@ class AttendanceController extends Controller
             ->orderBy('start_at', 'desc')
             ->get();
 
+        $phases = \App\Models\Phase::orderBy('is_active', 'desc')->get();
+
         return view('admin.attendance.index', compact(
             'totalApprentices',
             'presentToday',
@@ -65,7 +67,8 @@ class AttendanceController extends Controller
             'attendanceRate',
             'lateToday',
             'recentLogs',
-            'activeSessions'
+            'activeSessions',
+            'phases'
         ));
     }
 
@@ -115,47 +118,6 @@ class AttendanceController extends Controller
         ]);
     }
 
-    /**
-     * Display attendance logs with filters.
-     */
-    public function logs(Request $request)
-    {
-        $query = AttendanceLog::with(['apprentice', 'createdBy']);
-
-        // Filtros
-        if ($request->filled('apprentice_id')) {
-            $query->where('apprentice_id', $request->apprentice_id);
-        }
-
-        if ($request->filled('event_type')) {
-            $query->where('event_type', $request->event_type);
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('occurred_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('occurred_at', '<=', $request->date_to);
-        }
-
-        if ($request->filled('source')) {
-            $query->where('source', $request->source);
-        }
-
-        $logs = $query->orderBy('occurred_at', 'desc')->paginate(20);
-
-        // Estadísticas de filtros
-        $entryCount = $logs->where('event_type', 'entrada')->count();
-        $exitCount = $logs->where('event_type', 'salida')->count();
-
-        // Lista de aprendices para filtros
-        $apprentices = User::whereHas('role', function ($q) {
-            $q->where('name', 'Aprendiz');
-        })->where('status', 'activo')->get();
-
-        return view('admin.attendance.logs', compact('logs', 'apprentices', 'entryCount', 'exitCount'));
-    }
 
     /**
      * Display attendance sessions.
@@ -440,7 +402,7 @@ class AttendanceController extends Controller
 
             $hoursWorked = 0;
             if ($firstEntry && $lastExit) {
-                $hoursWorked = $firstEntry->occurred_at->diffInHours($lastExit->occurred_at);
+                $hoursWorked = $firstEntry->occurred_at->diffInMinutes($lastExit->occurred_at);
             }
 
             $reportData[] = [

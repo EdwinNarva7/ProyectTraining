@@ -24,7 +24,7 @@
         
         <form action="{{ route('admin.penalties.index') }}" method="GET" class="grid grid-cols-1 lg:grid-cols-4 gap-6 relative z-10">
             <div class="lg:col-span-2">
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Buscar aprendiz</label>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Buscar colaborador</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
                         <i class="fas fa-search text-slate-300"></i>
@@ -68,7 +68,7 @@
             <table class="w-full text-left">
                 <thead>
                     <tr class="bg-slate-50/50">
-                        <th class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Aprendiz</th>
+                        <th class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Colaborador</th>
                         <th class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Fecha</th>
                         <th class="px-8 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Programada</th>
                         <th class="px-8 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Asistida</th>
@@ -82,8 +82,12 @@
                         <tr class="group/item hover:bg-slate-50/80 transition-all duration-200">
                             <td class="px-8 py-6">
                                 <div class="flex items-center gap-4">
-                                    <div class="h-12 w-12 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold text-lg shadow-sena shadow-md group-hover/item:scale-110 group-hover/item:rotate-3 transition-transform">
-                                        {{ strtoupper(substr(($penalty->apprentice?->name ?? 'A'), 0, 1)) }}
+                                    <div class="h-12 w-12 rounded-2xl sena-gradient flex items-center justify-center text-white font-bold text-lg shadow-sena shadow-md group-hover/item:scale-110 group-hover/item:rotate-3 transition-transform overflow-hidden">
+                                        @if($penalty->apprentice?->profile_photo_path)
+                                            <img src="{{ Storage::url($penalty->apprentice->profile_photo_path) }}" class="w-full h-full object-cover">
+                                        @else
+                                            {{ strtoupper(substr(($penalty->apprentice?->name ?? 'A'), 0, 1)) }}
+                                        @endif
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold text-slate-800 mb-0.5">{{ $penalty->apprentice?->name ?? 'Aprendiz sin nombre' }}</p>

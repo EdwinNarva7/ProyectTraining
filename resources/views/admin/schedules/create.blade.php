@@ -14,7 +14,7 @@
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900 mb-2 font-outfit">Asignar Horario</h1>
-                <p class="text-gray-500 text-sm">Defina las horas de trabajo y disponibilidad de un aprendiz</p>
+                <p class="text-gray-500 text-sm">Defina las horas de trabajo y disponibilidad de un colaborador</p>
             </div>
             <div>
                 <a href="{{ route('admin.schedules.index') }}"
@@ -48,35 +48,50 @@
                 <form action="{{ route('admin.schedules.store') }}" method="POST" class="p-8 space-y-8" id="scheduleForm">
                     @csrf
 
-                    <!-- Apprentice Selection -->
+                    <!-- Technologist Selection -->
                     <div class="space-y-4">
-                        <label class="block text-sm font-bold text-gray-700 ml-1">Seleccionar Aprendiz <span
+                        <label class="block text-sm font-bold text-gray-700 ml-1">Seleccionar Tecnólogo / Programa <span
                                 class="text-rose-500">*</span></label>
                         <div class="relative group">
-                            <select name="apprentice_id" id="apprentice_id"
-                                class="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-sena/50 transition duration-200 appearance-none @error('apprentice_id') border-rose-500 @enderror"
+                            <select name="technologist_id" id="technologist_id"
+                                class="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-sena/50 transition duration-200 appearance-none @error('technologist_id') border-rose-500 @enderror"
                                 required>
-                                <option value="">Elija un aprendiz...</option>
-                                @foreach ($apprentices as $apprentice)
-                                    <option value="{{ $apprentice->id }}"
-                                        data-name="{{ $apprentice->full_name }}"
-                                        data-email="{{ $apprentice->email }}"
-                                        data-cohort="{{ $apprentice->apprenticeProfile?->cohort ?? 'N/A' }}"
-                                        {{ old('apprentice_id') == $apprentice->id ? 'selected' : '' }}>
-                                        {{ $apprentice->full_name }}
-                                    </option>
+                                <option value="">Elija un programa...</option>
+                                @foreach($phases as $phase)
+                                    <optgroup label="Fase: {{ $phase->name }}">
+                                        @foreach($phase->technologists as $tech)
+                                            <option value="{{ $tech->id }}"
+                                                data-name="{{ $tech->name }}"
+                                                data-phase="{{ $phase->name }}"
+                                                data-end="{{ $tech->end_date ? $tech->end_date->format('d/m/Y') : 'Fin de fase' }}"
+                                                {{ old('technologist_id') == $tech->id ? 'selected' : '' }}>
+                                                {{ $tech->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
                                 @endforeach
                             </select>
                             <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sena transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                 </svg>
                             </div>
                         </div>
-                        @error('apprentice_id')
+                        @error('technologist_id')
                             <p class="text-xs text-rose-500 mt-1 ml-1 font-medium">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <!-- Optional Apprentice Override (Oculto por defecto si el usuario solo quiere tecnologos) -->
+                    <div class="space-y-4 hidden" id="apprentice_override_container">
+                        <label class="block text-sm font-bold text-gray-700 ml-1">Aprendiz Específico (Opcional)</label>
+                        <select name="apprentice_id" id="apprentice_id" class="w-full pl-4 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-sena/50 transition duration-200">
+                            <option value="">Ninguno (Aplicar a todo el programa)</option>
+                            @foreach ($apprentices as $apprentice)
+                                <option value="{{ $apprentice->id }}">{{ $apprentice->full_name }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -89,6 +104,8 @@
                                     class="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-sena/50 transition duration-200 appearance-none @error('weekday') border-rose-500 @enderror"
                                     required>
                                     <option value="">Seleccionar Día...</option>
+                                    <option value="all" {{ old('weekday') == 'all' ? 'selected' : '' }} class="font-bold text-sena bg-sena/5">Semana Completa (Lun - Vie)</option>
+                                    <option disabled>──────────</option>
                                     <option value="1" {{ old('weekday') == '1' ? 'selected' : '' }}>Lunes</option>
                                     <option value="2" {{ old('weekday') == '2' ? 'selected' : '' }}>Martes</option>
                                     <option value="3" {{ old('weekday') == '3' ? 'selected' : '' }}>Miércoles</option>
@@ -186,25 +203,25 @@
 
         <!-- Right Column: Sidebar -->
         <div class="space-y-6">
-            <!-- Apprentice Preview -->
-            <div id="apprentice_card" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 transition-all duration-300 opacity-50 grayscale pointer-events-none">
-                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Aprendiz Seleccionado</h3>
+            <!-- Technologist Preview -->
+            <div id="tech_card" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 transition-all duration-300 opacity-50 grayscale pointer-events-none">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Tecnólogo Seleccionado</h3>
                 
                 <div class="flex flex-col items-center text-center">
-                    <div id="app_avatar" class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-3xl font-bold mb-4 shadow-inner ring-4 ring-white transition-all duration-300">
-                        ?
+                    <div id="tech_avatar" class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-3xl font-bold mb-4 shadow-inner ring-4 ring-white transition-all duration-300">
+                        <i class="fas fa-graduation-cap"></i>
                     </div>
-                    <h4 id="app_name" class="text-xl font-bold text-gray-900 mb-1">Esperando Selección...</h4>
-                    <p id="app_email" class="text-sm text-gray-500 mb-6 font-medium">Por favor seleccione un aprendiz</p>
+                    <h4 id="tech_name_display" class="text-xl font-bold text-gray-900 mb-1">Esperando Selección...</h4>
+                    <p id="tech_phase_display" class="text-sm text-gray-500 mb-6 font-medium">Por favor seleccione un programa</p>
 
                     <div class="w-full space-y-3">
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                            <span class="text-xs font-bold text-gray-400 uppercase">Ficha</span>
-                            <span id="app_cohort" class="text-sm font-bold text-gray-900">--</span>
+                            <span class="text-xs font-bold text-gray-400 uppercase">Finaliza</span>
+                            <span id="tech_end_display" class="text-sm font-bold text-gray-900">--</span>
                         </div>
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                            <span class="text-xs font-bold text-gray-400 uppercase">Estado</span>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-200 text-gray-600">Pendiente</span>
+                            <span class="text-xs font-bold text-gray-400 uppercase">Estado Phase</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-sena/10 text-sena">Vínculado</span>
                         </div>
                     </div>
                 </div>
@@ -249,30 +266,29 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    const apprenticeSelect = $('#apprentice_id');
+    const techSelect = $('#technologist_id');
     const startTimeInput = $('#start_time');
     const endTimeInput = $('#end_time');
 
-    // Apprentice Selection Change
-    apprenticeSelect.on('change', function() {
+    // Technologist Selection Change
+    techSelect.on('change', function() {
         const selected = $(this).find(':selected');
         if (selected.val()) {
             const name = selected.data('name');
-            const email = selected.data('email');
-            const cohort = selected.data('cohort');
-            const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            const phase = selected.data('phase');
+            const end = selected.data('end');
 
-            $('#apprentice_card').removeClass('opacity-50 grayscale pointer-events-none');
-            $('#app_avatar').html(initials).addClass('bg-gradient-to-br from-sena to-sena-dark text-white ring-sena/20');
-            $('#app_name').text(name);
-            $('#app_email').text(email);
-            $('#app_cohort').text(cohort);
+            $('#tech_card').removeClass('opacity-50 grayscale pointer-events-none');
+            $('#tech_avatar').addClass('bg-gradient-to-br from-sena to-sena-dark text-white ring-sena/20');
+            $('#tech_name_display').text(name);
+            $('#tech_phase_display').text("Fase: " + phase);
+            $('#tech_end_display').text(end);
         } else {
-            $('#apprentice_card').addClass('opacity-50 grayscale pointer-events-none');
-            $('#app_avatar').html('?').removeClass('bg-gradient-to-br from-sena to-sena-dark text-white ring-sena/20');
-            $('#app_name').text('Esperando Selección...');
-            $('#app_email').text('Por favor seleccione un aprendiz');
-            $('#app_cohort').text('--');
+            $('#tech_card').addClass('opacity-50 grayscale pointer-events-none');
+            $('#tech_avatar').removeClass('bg-gradient-to-br from-sena to-sena-dark text-white ring-sena/20');
+            $('#tech_name_display').text('Esperando Selección...');
+            $('#tech_phase_display').text('Por favor seleccione un programa');
+            $('#tech_end_display').text('--');
         }
     });
 
@@ -317,7 +333,7 @@ $(document).ready(function() {
     
     // Initial calculation if editing/old input exists
     if (startTimeInput.val() || endTimeInput.val()) updateCalculations();
-    if (apprenticeSelect.val()) apprenticeSelect.trigger('change');
+    if (techSelect.val()) techSelect.trigger('change');
 
     // Form Validation Enhancements
     $('#scheduleForm').on('submit', function(e) {

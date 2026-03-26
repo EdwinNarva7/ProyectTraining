@@ -8,6 +8,7 @@ use App\Models\AttendanceLog;
 use App\Models\AttendanceSession;
 use App\Models\Schedule;
 use App\Models\RecoverySession;
+use App\Models\Penalty;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -19,19 +20,6 @@ class FingerprintController extends Controller
     // ─────────────────────────────────────────────────────────────────────────
     // VISTAS
     // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Panel de marcación de asistencia por huella (acceso del operario/admin).
-     */
-    public function scannerPanel()
-    {
-        $apprentices = User::whereHas('role', fn($q) => $q->where('name', 'Aprendiz'))
-            ->where('status', 'activo')
-            ->with('apprenticeProfile')
-            ->get();
-
-        return view('admin.fingerprint.scanner', compact('apprentices'));
-    }
 
     /**
      * Panel de gestión de huellas (enrolamiento, eliminación).
@@ -228,76 +216,118 @@ class FingerprintController extends Controller
      */
     private function registerEntry(User $apprentice, Carbon $now): array
     {
-        // Verificar horario del día
+        // Detectar posibles jornadas para hoy
         $weekday = $now->dayOfWeek === 0 ? 7 : $now->dayOfWeek;
+        
+        // 1. Buscar horario individual
         $todaySchedule = Schedule::where('apprentice_id', $apprentice->id)
             ->where('weekday', $weekday)
             ->where('status', 'activo')
             ->first();
 
+        // 2. Si no hay individual, buscar por tecnólogo
+        if (!$todaySchedule && $apprentice->apprenticeProfile?->technologist_id) {
+            $todaySchedule = Schedule::where('technologist_id', $apprentice->apprenticeProfile->technologist_id)
+                ->where('weekday', $weekday)
+                ->where('status', 'activo')
+                ->first();
+        }
+
+        // Buscar recuperación programada para HOY
         $recoverySession = RecoverySession::where('apprentice_id', $apprentice->id)
             ->where('date', $now->toDateString())
-            ->where('status', 'scheduled')
+            ->whereIn('status', ['scheduled', 'in_progress'])
             ->first();
 
-        if (!$todaySchedule && !$recoverySession) {
+        // Determinar qué jornada está activa o por empezar
+        $activeTarget = null;
+        $type = null;
+
+        // 1. PRIORIDAD: Evaluar si la RECUPEACIÓN es la válida para este momento (desde 15m antes hasta el fin)
+        if ($recoverySession) {
+            $startRec = Carbon::parse($recoverySession->scheduled_start_time);
+            $endRec = Carbon::parse($recoverySession->scheduled_end_time);
+
+            if ($now->gte($startRec->copy()->subMinutes(15)) && $now->lte($endRec)) {
+                $activeTarget = $recoverySession;
+                $type = 'recovery';
+            }
+        }
+
+        // 2. Si no es recuperación, evaluar si la jornada NORMAL es la válida
+        if (!$activeTarget && $todaySchedule) {
+            $startNormal = Carbon::today()->setTimeFrom($todaySchedule->start_time);
+            $endNormal = Carbon::today()->setTimeFrom($todaySchedule->end_time);
+            
+            if ($now->gte($startNormal->copy()->subMinutes(30)) && $now->lte($endNormal)) {
+                $activeTarget = $todaySchedule;
+                $type = 'normal';
+            }
+        }
+
+        // 3. Validaciones de Errores Específicos (cuando no se encontró jornada activa)
+        if (!$activeTarget) {
+            // Si la jornada normal ya pasó (y no estamos en rango de recuperación)
+            if ($todaySchedule && $now->gt(Carbon::today()->setTimeFrom($todaySchedule->end_time))) {
+                return [
+                    'success' => false,
+                    'message' => "Tu jornada de hoy ya expiró a las " . Carbon::parse($todaySchedule->end_time)->format('H:i') . ". Contacta al instructor.",
+                    'apprentice' => $apprentice->full_name,
+                ];
+            }
+
+            // Si es muy temprano
+            if ($todaySchedule && $now->lt(Carbon::today()->setTimeFrom($todaySchedule->start_time)->subMinutes(30))) {
+                return [
+                    'success' => false,
+                    'message' => "Aún es muy temprano para tu jornada. Empieza a las " . Carbon::parse($todaySchedule->start_time)->format('H:i'),
+                    'apprentice' => $apprentice->full_name,
+                ];
+            }
+
+            if ($recoverySession && $now->lt(Carbon::parse($recoverySession->scheduled_start_time)->subMinutes(15))) {
+                return [
+                    'success' => false,
+                    'message' => "La recuperación inicia a las " . Carbon::parse($recoverySession->scheduled_start_time)->format('H:i') . ". Por favor espera.",
+                    'apprentice' => $apprentice->full_name,
+                ];
+            }
+            
             return [
                 'success' => false,
-                'message' => "No hay jornada programada para {$apprentice->full_name} hoy.",
+                'message' => "No tienes una jornada o recuperación programada en este momento.",
                 'apprentice' => $apprentice->full_name,
-                'event_type' => null,
             ];
         }
 
-        // Validar ventana de tiempo
-        if ($todaySchedule) {
-            $scheduledStart = Carbon::today()->setTimeFrom($todaySchedule->start_time);
-            $scheduledEnd = Carbon::today()->setTimeFrom($todaySchedule->end_time);
+        // Verificar si ya tiene entrada para ESTA jornada específica
+        $logNote = $type === 'recovery' 
+            ? "Entrada a Recuperación #{$activeTarget->id}" 
+            : "Entrada automática a jornada normal";
 
-            if ($now->lt($scheduledStart)) {
-                return [
-                    'success' => false,
-                    'message' => "Aún no es hora. La jornada de {$apprentice->full_name} empieza a las {$scheduledStart->format('H:i')}.",
-                    'apprentice' => $apprentice->full_name,
-                    'event_type' => null,
-                ];
-            }
-
-            if ($now->gt($scheduledEnd)) {
-                return [
-                    'success' => false,
-                    'message' => "La jornada de {$apprentice->full_name} ya terminó ({$scheduledEnd->format('H:i')}).",
-                    'apprentice' => $apprentice->full_name,
-                    'event_type' => null,
-                ];
-            }
-        } elseif ($recoverySession) {
-            $scheduledStart = Carbon::parse($recoverySession->scheduled_start_time);
-            $scheduledEnd = Carbon::parse($recoverySession->scheduled_end_time);
-
-            if ($now->lt($scheduledStart->copy()->subMinutes(5))) {
-                return [
-                    'success' => false,
-                    'message' => "Aún no es hora para la recuperación de {$apprentice->full_name} (desde {$scheduledStart->format('H:i')}).",
-                    'apprentice' => $apprentice->full_name,
-                    'event_type' => null,
-                ];
-            }
-        }
-
-        // Verificar si ya tiene entrada hoy
         $todayEntry = AttendanceLog::where('apprentice_id', $apprentice->id)
             ->where('event_type', 'entrada')
             ->whereDate('occurred_at', Carbon::today())
+            ->where('note', $logNote)
             ->first();
 
         if ($todayEntry) {
             return [
                 'success' => false,
-                'message' => "{$apprentice->full_name} ya tiene entrada registrada hoy a las {$todayEntry->occurred_at->format('H:i')}.",
+                'message' => "Ya registraste tu entrada para esta " . ($type === 'recovery' ? 'recuperación' : 'jornada') . " hoy a las {$todayEntry->occurred_at->format('H:i')}.",
                 'apprentice' => $apprentice->full_name,
-                'event_type' => 'entrada',
             ];
+        }
+
+        // Determinar hora de inicio efectiva (espera hasta la hora programada si es temprano)
+        $effectiveStart = $now->copy();
+        
+        if ($type === 'normal') {
+            $scheduledStart = Carbon::today()->setTimeFrom($activeTarget->start_time);
+            if ($now->lt($scheduledStart)) $effectiveStart = $scheduledStart;
+        } else {
+            $scheduledStart = Carbon::parse($activeTarget->scheduled_start_time);
+            if ($now->lt($scheduledStart)) $effectiveStart = $scheduledStart;
         }
 
         // ── Registrar entrada ────────────────────────────────────────────────
@@ -306,18 +336,25 @@ class FingerprintController extends Controller
             'event_type' => 'entrada',
             'occurred_at' => $now,
             'source' => 'huella',
-            'note' => 'Entrada registrada por lector biométrico',
+            'note' => $logNote,
             'created_by' => Auth::id() ?? $apprentice->id,
         ]);
 
-        AttendanceSession::create([
+        if ($type === 'recovery') {
+            $activeTarget->update([
+                'status' => 'in_progress',
+                'start_time' => $now
+            ]);
+        }
+
+         AttendanceSession::create([
             'apprentice_id' => $apprentice->id,
-            'start_at' => $now,
+            'start_at' => $effectiveStart,
         ]);
 
         return [
             'success' => true,
-            'message' => "✅ Entrada registrada para {$apprentice->full_name}",
+            'message' => "¡Hola {$apprentice->full_name}! Tu ENTRADA ha sido registrada correctamente.",
             'apprentice' => $apprentice->full_name,
             'event_type' => 'entrada',
             'timestamp' => $now->format('H:i:s'),
@@ -330,38 +367,59 @@ class FingerprintController extends Controller
      */
     private function registerExit(User $apprentice, AttendanceSession $activeSession, Carbon $now): array
     {
+        // 1. Determinar cuál jornada se está operando hoy según el horario actual
+        $scheduledEnd = null;
+        $isRecovery = false;
+
+        // Buscar jornada normal (individual o por tecnólogo)
         $weekday = $now->dayOfWeek === 0 ? 7 : $now->dayOfWeek;
         $todaySchedule = Schedule::where('apprentice_id', $apprentice->id)
             ->where('weekday', $weekday)
             ->where('status', 'activo')
             ->first();
 
-        // Determinar fin programado (para no superar el horario)
-        $scheduledEnd = null;
-        if ($todaySchedule) {
-            $scheduledEnd = Carbon::today()->setTimeFrom($todaySchedule->end_time);
-        } else {
-            $recoverySession = RecoverySession::where('apprentice_id', $apprentice->id)
-                ->where('date', $now->toDateString())
-                ->where('status', 'scheduled')
+        if (!$todaySchedule && $apprentice->apprenticeProfile?->technologist_id) {
+            $todaySchedule = Schedule::where('technologist_id', $apprentice->apprenticeProfile->technologist_id)
+                ->where('weekday', $weekday)
+                ->where('status', 'activo')
                 ->first();
-            if ($recoverySession) {
-                $scheduledEnd = Carbon::parse($recoverySession->scheduled_end_time);
-            }
         }
 
-        // Hora efectiva de salida (no superar horario programado)
+        // Buscar recuperación (dar prioridad a una que esté en proceso)
+        $recoverySession = RecoverySession::where('apprentice_id', $apprentice->id)
+            ->where('date', $now->toDateString())
+            ->whereIn('status', ['in_progress', 'scheduled'])
+            ->first();
+
+        // Priorizar la jornada donde el "ahora" encaje mejor con el fin programado
+        if ($recoverySession && $recoverySession->status === 'in_progress') {
+            $scheduledEnd = Carbon::parse($recoverySession->scheduled_end_time);
+            $isRecovery = true;
+        } elseif ($todaySchedule) {
+            $endNormal = Carbon::today()->setTimeFrom($todaySchedule->end_time);
+            $scheduledEnd = $endNormal;
+            $isRecovery = false;
+        } elseif ($recoverySession) {
+            $scheduledEnd = Carbon::parse($recoverySession->scheduled_end_time);
+            $isRecovery = true;
+        }
+
+        // 2. Hora efectiva de salida (no superar horario programado)
         $effectiveEnd = ($scheduledEnd && $now->gt($scheduledEnd)) ? $scheduledEnd : $now;
+        
+        // 3. Calcular tiempo faltante si sale antes de lo programado
+        $missingMinutes = ($scheduledEnd && $now->lt($scheduledEnd)) ? $now->diffInMinutes($scheduledEnd) : 0;
+        
         $startTime = Carbon::parse($activeSession->start_at);
         $durationMinutes = $startTime->gt($effectiveEnd) ? 0 : $startTime->diffInMinutes($effectiveEnd);
 
-        // Cerrar sesión
+        // 4. Cerrar sesión
         $activeSession->update([
             'end_at' => $effectiveEnd,
             'duration_minutes' => $durationMinutes,
         ]);
 
-        // Log de salida
+        // 5. Log de salida
         AttendanceLog::create([
             'apprentice_id' => $apprentice->id,
             'event_type' => 'salida',
@@ -371,8 +429,67 @@ class FingerprintController extends Controller
             'created_by' => Auth::id() ?? $apprentice->id,
         ]);
 
+        // 6. Manejo específico de RECUPEARCION si aplica
+        if ($isRecovery && $recoverySession) {
+            $recoverySession->update([
+                'status' => 'completed',
+                'start_time' => $activeSession->start_at,
+                'end_time' => $effectiveEnd,
+                'duration_minutes' => $durationMinutes
+            ]);
+
+            $penalty = $recoverySession->recoveryRequest->penalty;
+            $newAttended = ($penalty->attended_hours * 60) + $durationMinutes;
+            $newPenalty = max(0, ($penalty->scheduled_hours * 60) - $newAttended);
+
+            $penalty->update([
+                'attended_hours' => $newAttended / 60,
+                'penalty_hours' => $newPenalty / 60,
+                'status' => $newPenalty <= 0 ? 'closed' : 'in_recovery'
+            ]);
+
+            $recoverySession->recoveryRequest->update(['status' => 'completed']);
+        }
+
+        // 7. Manejo de JORNADA regular: generar penalización si hay deuda
+        $scheduledMinutes = 0;
+        $attendedMinutes = $durationMinutes;
+        
+        if (!$isRecovery && $todaySchedule) {
+            $scheduledMinutes = Carbon::parse($todaySchedule->start_time)->diffInMinutes(Carbon::parse($todaySchedule->end_time));
+            
+            // Obtener todas las sesiones completadas hoy para calcular total asistido
+            $todaySessions = AttendanceSession::where('apprentice_id', $apprentice->id)
+                ->whereDate('start_at', $now->toDateString())
+                ->whereNotNull('end_at')
+                ->get();
+
+            $attendedMinutes = $todaySessions->sum('duration_minutes');
+            $pendingMinutes = max(0, $scheduledMinutes - $attendedMinutes);
+
+            if ($pendingMinutes > 0) {
+                Penalty::updateOrCreate(
+                    [
+                        'apprentice_id' => $apprentice->id,
+                        'date' => $now->toDateString(),
+                    ],
+                    [
+                        'scheduled_hours' => $scheduledMinutes / 60,
+                        'attended_hours' => $attendedMinutes / 60,
+                        'penalty_hours' => $pendingMinutes / 60,
+                        'schedule_id' => $todaySchedule->id,
+                        'status' => 'pending'
+                    ]
+                );
+            }
+        }
+
         $hours = intdiv($durationMinutes, 60);
         $minutes = $durationMinutes % 60;
+        
+        $missingHours = intdiv($missingMinutes, 60);
+        $missingMins = $missingMinutes % 60;
+        $missingDisplay = $missingMinutes > 0 ? "{$missingHours}h {$missingMins}m" : null;
 
         return [
             'success' => true,
@@ -383,6 +500,8 @@ class FingerprintController extends Controller
             'date' => $effectiveEnd->format('d/m/Y'),
             'duration_hours' => round($durationMinutes / 60, 2),
             'duration_display' => "{$hours}h {$minutes}m",
+            'missing_minutes' => $missingMinutes,
+            'missing_display' => $missingDisplay,
         ];
     }
 }

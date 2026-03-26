@@ -63,7 +63,7 @@
                         <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"></path>
                         </svg>
-                        {{ $user->role->name }}
+                        {{ $user->role->name === 'Aprendiz' ? 'Colaborador' : $user->role->name }}
                     </span>
                 @endif
             </div>
@@ -152,7 +152,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                     </svg>
                 </div>
-                <h3 class="text-sm font-semibold text-gray-900">Información del Aprendiz</h3>
+                <h3 class="text-sm font-semibold text-gray-900">Información del Colaborador</h3>
             </div>
 
             <div class="space-y-4">
@@ -167,6 +167,19 @@
                     </div>
                 </div>
 
+                <!-- Personal Email -->
+                @if($user->apprenticeProfile->personal_email)
+                <div class="flex items-start gap-3">
+                    <svg class="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium">Correo Personal</p>
+                        <p class="text-sm text-gray-900 font-medium">{{ $user->apprenticeProfile->personal_email }}</p>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Phone -->
                 <div class="flex items-start gap-3">
                     <svg class="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,18 +187,77 @@
                     </svg>
                     <div>
                         <p class="text-xs text-gray-500 font-medium">Teléfono</p>
-                        <p class="text-sm text-gray-900">{{ $user->apprenticeProfile->phone ?? 'No registrado' }}</p>
+                        <p class="text-sm text-gray-900 font-medium">{{ $user->apprenticeProfile->phone ?? 'No registrado' }}</p>
                     </div>
                 </div>
 
-                <!-- Cohort -->
-                <div class="flex items-start gap-3">
-                    <svg class="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                    </svg>
+                <!-- RH & Emergency Contact -->
+                <div class="grid grid-cols-2 gap-4 pt-3 border-t border-gray-100">
                     <div>
-                        <p class="text-xs text-gray-500 font-medium">Ficha (Cohort)</p>
-                        <p class="text-sm text-gray-900">{{ $user->apprenticeProfile->cohort ?? 'No registrado' }}</p>
+                        <p class="text-xs text-gray-500 font-medium mb-1">RH</p>
+                        <p class="text-sm text-gray-900 font-semibold">{{ $user->apprenticeProfile->blood_type ?? 'N/A' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium mb-1">Emergencia</p>
+                        <p class="text-sm text-gray-900 font-medium">{{ $user->apprenticeProfile->emergency_contact ?? 'N/A' }}</p>
+                    </div>
+                </div>
+
+                <!-- Residence -->
+                <div class="pt-3 border-t border-gray-100">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium">Residencia</p>
+                            <p class="text-sm text-gray-900 font-medium">{{ $user->apprenticeProfile->residence_address ?? 'No registrado' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Title & Advisor -->
+                <div class="pt-3 border-t border-gray-100 space-y-3">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium">Cargo</p>
+                            <p class="text-sm text-gray-900 font-medium">{{ $user->apprenticeProfile->job_title ?? 'No registrado' }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium">Asesor Técnico</p>
+                            <p class="text-sm text-gray-900 font-medium">{{ $user->apprenticeProfile->technical_advisor ?? 'No registrado' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Academic Info -->
+                <div class="pt-3 border-t border-gray-100 space-y-3">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium">Tecnólogo (Cohorte)</p>
+                            <p class="text-sm text-gray-900 font-medium">{{ $user->apprenticeProfile->cohort ?? 'No registrado' }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium">Ficha</p>
+                            <p class="text-sm text-gray-900 font-medium">{{ $user->apprenticeProfile->fiche_number ?? 'No registrado' }}</p>
+                        </div>
                     </div>
                 </div>
 

@@ -31,6 +31,23 @@
 
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
+                <!-- Support Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link" data-toggle="dropdown" href="#">
+                        <i class="far fa-question-circle"></i> Soporte
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a href="{{ asset('docs/Plantilla Manual Usuario Sistema.pdf') }}" target="_blank" class="dropdown-item">
+                            <i class="fas fa-book mr-2"></i> Manual Usuario
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ asset('docs/Plantilla del Manual Tecnico.pdf') }}" target="_blank" class="dropdown-item">
+                            <i class="fas fa-file-code mr-2"></i> Manual Técnico
+                        </a>
+                    </div>
+                </li>
+
+                <!-- User Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link" data-toggle="dropdown" href="#">
                         <i class="far fa-user"></i> {{ Auth::user()->full_name }}

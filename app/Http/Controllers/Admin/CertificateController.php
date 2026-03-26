@@ -89,7 +89,6 @@ class CertificateController extends Controller
             'apprentice_id.exists' => 'El aprendiz seleccionado no existe.',
             'hours_completed.required' => 'Debe especificar las horas completadas.',
             'hours_completed.numeric' => 'Las horas deben ser un número válido.',
-            'hours_completed.min' => 'El aprendiz debe haber completado al menos 80 horas.',
             'email_to.email' => 'El email debe tener un formato válido.',
         ]);
 
@@ -162,7 +161,7 @@ class CertificateController extends Controller
     {
         $request->validate([
             'apprentice_id' => 'required|exists:users,id',
-            'hours_completed' => 'required|numeric|min:80',
+            'hours_completed' => 'required|numeric',
             'status' => 'required|in:generado,enviado,descargado,anulado',
             'email_to' => 'nullable|email',
         ]);
@@ -320,14 +319,19 @@ class CertificateController extends Controller
         return User::whereHas('role', function ($q) {
             $q->where('name', 'Aprendiz');
         })->where('status', 'activo')
-            ->with('apprenticeProfile')
+            ->with('apprenticeProfile.phase')
             ->get()
             ->filter(function ($apprentice) {
-                $hours = $this->getApprenticeHours($apprentice->id);
-                return $hours >= 80;
+                $actualMinutes = $apprentice->getTotalWorkedMinutes();
+                $expectedMinutes = $apprentice->getExpectedWorkedMinutes();
+                
+                // Eligible if they met or exceeded the phase requirement
+                return $actualMinutes >= $expectedMinutes && $expectedMinutes > 0;
             })
             ->map(function ($apprentice) {
-                $apprentice->hours_completed = $this->getApprenticeHours($apprentice->id);
+                // Store in hours for the view
+                $apprentice->hours_completed = round($apprentice->getTotalWorkedMinutes() / 60, 2);
+                $apprentice->required_hours = round($apprentice->getExpectedWorkedMinutes() / 60, 2);
                 return $apprentice;
             })
             ->sortByDesc('hours_completed');
@@ -338,9 +342,10 @@ class CertificateController extends Controller
      */
     private function getApprenticeHours($apprenticeId)
     {
-        return AttendanceSession::where('apprentice_id', $apprenticeId)
-            ->whereNotNull('end_at')
-            ->sum('duration_minutes') / 60;
+        $user = User::find($apprenticeId);
+        if (!$user) return 0;
+        
+        return $user->getTotalWorkedMinutes() / 60;
     }
 
     /**

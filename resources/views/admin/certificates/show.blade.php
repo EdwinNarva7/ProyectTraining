@@ -284,31 +284,43 @@
 @push('scripts')
     <script>
         function generatePDF(certificateId) {
-            cancelButton: 'rounded-xl px-4 py-2 font-medium'
-        }
-                    }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({
-                    title: 'Generating...',
-                    text: 'Please wait while we create your document.',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
+            Swal.fire({
+                title: '¿Generar PDF?',
+                text: 'Se creará el documento oficial del certificado.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10B981',
+                cancelButtonColor: '#64748B',
+                confirmButtonText: 'Sí, generar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'rounded-xl px-4 py-2 font-medium',
+                    cancelButton: 'rounded-xl px-4 py-2 font-medium'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Generando...',
+                        text: 'Espere un momento mientras se crea el documento.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
 
-                fetch(`/admin/certificates/${certificateId}/generate`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Content-Type': 'application/json',
-                    },
-                })
+                    fetch(`/admin/certificates/${certificateId}/generate`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                    })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
                             Swal.fire({
-                                title: 'Success!',
+                                title: '¡Éxito!',
                                 text: data.message,
                                 icon: 'success',
                                 confirmButtonColor: '#10B981',
@@ -327,21 +339,86 @@
                         }
                     })
                     .catch(error => {
+                        console.error('Error:', error);
                         Swal.fire({
                             title: 'Error',
-                            text: 'An unexpected error occurred during generation.',
+                            text: 'Ocurrió un error inesperado al generar el PDF.',
                             icon: 'error',
                             confirmButtonColor: '#EF4444',
                             customClass: { confirmButton: 'rounded-xl px-4 py-2 font-medium' }
                         });
                     });
-            }
-        });
-                } else {
-            if (confirm('¿Generar PDF?')) {
-                // Fallback basic fetch logic
-            }
+                }
+            });
         }
-            }
+
+        function sendEmail(certificateId, email) {
+            Swal.fire({
+                title: '¿Enviar por Correo?',
+                text: `Se enviará el certificado a: ${email}`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#4F46E5',
+                cancelButtonColor: '#64748B',
+                confirmButtonText: 'Sí, enviar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'rounded-xl px-4 py-2 font-medium',
+                    cancelButton: 'rounded-xl px-4 py-2 font-medium'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Enviando...',
+                        text: 'Espere un momento mientras realizamos el envío.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch(`/admin/certificates/${certificateId}/send`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: '¡Enviado!',
+                                text: data.message,
+                                icon: 'success',
+                                confirmButtonColor: '#10B981',
+                                customClass: { confirmButton: 'rounded-xl px-4 py-2 font-medium' }
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.message,
+                                icon: 'error',
+                                confirmButtonColor: '#EF4444',
+                                customClass: { confirmButton: 'rounded-xl px-4 py-2 font-medium' }
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Ocurrió un error inesperado al enviar el correo.',
+                            icon: 'error',
+                            confirmButtonColor: '#EF4444',
+                            customClass: { confirmButton: 'rounded-xl px-4 py-2 font-medium' }
+                        });
+                    });
+                }
+            });
+        }
     </script>
 @endpush

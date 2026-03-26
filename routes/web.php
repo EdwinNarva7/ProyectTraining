@@ -16,6 +16,8 @@ use App\Http\Controllers\Apprentice\RecoveryController as ApprenticeRecoveryCont
 use App\Http\Controllers\Admin\PenaltyController as AdminPenaltyController;
 use App\Http\Controllers\Admin\RecoverySessionController;
 use App\Http\Controllers\Admin\FingerprintController;
+use App\Http\Controllers\Admin\PhaseController;
+use App\Http\Controllers\Admin\HoursReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -64,7 +66,14 @@ Route::middleware(['auth', 'verified'])->prefix('aprendiz')->name('apprentice.')
     Route::post('recovery/{session}/end', [ApprenticeRecoveryController::class, 'endSession'])->name('recovery.end');
     Route::get('penalties/{penalty}', [ApprenticePenaltyController::class, 'show'])->name('penalties.show');
     Route::post('penalties/{penalty}/request-recovery', [ApprenticePenaltyController::class, 'requestRecovery'])->name('penalties.request-recovery');
+
+    // Módulo de Seguimiento de Horas
+    Route::get('hours-progress', [HoursReportController::class, 'apprenticeIndex'])->name('hours.progress');
 });
+
+// APIs de Huella (Accesibles para el Login si es necesario)
+Route::get('api/fingerprint/templates', [FingerprintController::class, 'getTemplates'])->name('fingerprint.templates');
+Route::post('api/fingerprint/mark', [FingerprintController::class, 'mark'])->name('fingerprint.mark');
 
 // Rutas del Panel de Administración
 Route::middleware(['auth', 'verified', 'admin.only'])->prefix('admin')->name('admin.')->group(function () {
@@ -74,6 +83,11 @@ Route::middleware(['auth', 'verified', 'admin.only'])->prefix('admin')->name('ad
     // Gestión de Usuarios
     Route::resource('users', UserController::class);
 
+    // Gestión de Fases
+    Route::resource('phases', PhaseController::class);
+    Route::post('phases/{phase}/activate', [PhaseController::class, 'activate'])->name('phases.activate');
+    Route::post('phases/{phase}/duplicate', [PhaseController::class, 'duplicate'])->name('phases.duplicate');
+
     // Gestión de Horarios
     Route::resource('schedules', ScheduleController::class);
     Route::get('schedules/apprentice/{apprentice_id}', [ScheduleController::class, 'getApprenticeSchedules'])->name('schedules.apprentice');
@@ -81,7 +95,6 @@ Route::middleware(['auth', 'verified', 'admin.only'])->prefix('admin')->name('ad
 
     // Gestión de Asistencia
     Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
-    Route::get('attendance/logs', [AttendanceController::class, 'logs'])->name('attendance.logs');
     Route::get('attendance/sessions', [AttendanceController::class, 'sessions'])->name('attendance.sessions');
     Route::get('attendance/detailed-report', [AttendanceController::class, 'detailedReport'])->name('attendance.detailed-report');
     Route::get('attendance/weekly-data', [AttendanceController::class, 'weeklyData'])->name('attendance.weekly-data');
@@ -93,8 +106,8 @@ Route::middleware(['auth', 'verified', 'admin.only'])->prefix('admin')->name('ad
 
     // Gestión de Certificados
     Route::resource('certificates', CertificateController::class);
-    Route::post('certificates/{certificate}/generate', [CertificateController::class, 'generate'])->name('certificates.generate');
-    Route::post('certificates/{certificate}/send', [CertificateController::class, 'send'])->name('certificates.send');
+    Route::post('certificates/{certificate}/generate', [CertificateController::class, 'generate'])->name('certificates.generate-pdf');
+    Route::post('certificates/{certificate}/send', [CertificateController::class, 'send'])->name('certificates.send-email');
     Route::get('certificates/{certificate}/download', [CertificateController::class, 'download'])->name('certificates.download');
 
     // Reportes
@@ -102,7 +115,22 @@ Route::middleware(['auth', 'verified', 'admin.only'])->prefix('admin')->name('ad
     Route::get('reports/attendance', [ReportController::class, 'attendance'])->name('reports.attendance');
     Route::get('reports/certificates', [ReportController::class, 'certificates'])->name('reports.certificates');
     Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
+    Route::get('reports/hours', [HoursReportController::class, 'adminIndex'])->name('reports.hours');
+    Route::get('reports/sessions-pdf', [ReportController::class, 'exportSessionsByPhase'])->name('reports.sessions-pdf');
+    Route::get('reports/attendance-chart-pdf', [ReportController::class, 'exportAttendanceChartPdf'])->name('reports.attendance-chart-pdf');
+    Route::get('reports/apprentice-attendance-pdf', [ReportController::class, 'exportApprenticeAttendancePdf'])->name('reports.apprentice-attendance-pdf');
 
+
+
+    // ── Módulo de Huella Digital ────────────────────────────────────────────
+    Route::get('fingerprint/enroll', [FingerprintController::class, 'enrollPanel'])->name('fingerprint.enroll');
+    // API interna (llamadas desde el Bridge y el JS del navegador)
+    Route::post('fingerprint/enroll', [FingerprintController::class, 'enroll'])->name('fingerprint.enroll.save');
+    Route::delete('fingerprint/{apprentice_id}', [FingerprintController::class, 'deleteEnrollment'])->name('fingerprint.delete');
+});
+
+// Rutas compartidas entre Administrador y Gerente
+Route::middleware(['auth', 'verified', 'admin_or_gerente'])->prefix('admin')->name('admin.')->group(function () {
     // Módulo de Recuperación de Horas
     Route::get('penalties', [AdminPenaltyController::class, 'index'])->name('penalties.index');
     Route::get('recovery-requests', [AdminPenaltyController::class, 'recoveryRequests'])->name('recovery-requests.index');
@@ -111,15 +139,11 @@ Route::middleware(['auth', 'verified', 'admin.only'])->prefix('admin')->name('ad
 
     Route::get('recovery-sessions', [RecoverySessionController::class, 'index'])->name('recovery-sessions.index');
     Route::post('recovery-sessions/{session}/close', [RecoverySessionController::class, 'close'])->name('recovery-sessions.close');
+});
 
-    // ── Módulo de Huella Digital ────────────────────────────────────────────
-    Route::get('fingerprint/scanner', [FingerprintController::class, 'scannerPanel'])->name('fingerprint.scanner');
-    Route::get('fingerprint/enroll', [FingerprintController::class, 'enrollPanel'])->name('fingerprint.enroll');
-    // API interna (llamadas desde el Bridge y el JS del navegador)
-    Route::post('fingerprint/enroll', [FingerprintController::class, 'enroll'])->name('fingerprint.enroll.save');
-    Route::delete('fingerprint/{apprentice_id}', [FingerprintController::class, 'deleteEnrollment'])->name('fingerprint.delete');
-    Route::get('fingerprint/templates', [FingerprintController::class, 'getTemplates'])->name('fingerprint.templates');
-    Route::post('fingerprint/mark', [FingerprintController::class, 'mark'])->name('fingerprint.mark');
+// Rutas exclusivas o compartidas para Gerente
+Route::middleware(['auth', 'verified', 'admin_or_gerente'])->prefix('gerente')->name('gerente.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Gerente\DashboardController::class, 'index'])->name('dashboard');
 });
 
 require __DIR__ . '/auth.php';

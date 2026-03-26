@@ -41,7 +41,7 @@
     </div>
 
     <!-- Form Card -->
-    <form action="{{ route('admin.users.update', $user) }}" method="POST">
+    <form action="{{ route('admin.users.update', $user) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -61,6 +61,31 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Profile Photo -->
+                    <div class="md:col-span-2">
+                        <label for="profile_photo" class="block text-sm font-medium text-gray-700 mb-2">
+                            Foto de Perfil
+                        </label>
+                        <div class="flex items-center gap-4">
+                            <div id="photo-preview" class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center border-2 border-dashed border-slate-200 overflow-hidden group">
+                                @if($user->profile_photo_path)
+                                    <img src="{{ Storage::url($user->profile_photo_path) }}" class="w-full h-full object-cover">
+                                @else
+                                    <i class="fas fa-camera text-2xl text-slate-300 group-hover:scale-110 transition-transform"></i>
+                                @endif
+                            </div>
+                            <div class="flex-1">
+                                <input type="file" name="profile_photo" id="profile_photo" accept="image/*"
+                                    class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-sena file:text-white hover:file:bg-sena-dark transition-all"
+                                    onchange="previewImage(this)">
+                                <p class="mt-2 text-xs text-gray-500 italic">Formatos permitidos: JPG, PNG, WEBP. Máximo 2MB.</p>
+                            </div>
+                        </div>
+                        @error('profile_photo')
+                            <p class="mt-1 text-sm text-red-600 font-bold uppercase tracking-widest">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Role -->
                     <div>
                         <label for="role_id" class="block text-sm font-medium text-gray-700 mb-2">
@@ -79,8 +104,9 @@
                                 required>
                                 <option value="">Seleccione un rol</option>
                                 @foreach($roles as $role)
+                                    @if($role->name === 'Administrador') @continue @endif
                                     <option value="{{ $role->id }}" {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>
-                                        {{ $role->name }}
+                                        {{ $role->name === 'Aprendiz' ? 'Colaborador' : $role->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -116,6 +142,8 @@
                         @enderror
                     </div>
 
+
+
                     <!-- Full Name -->
                     <div>
                         <label for="full_name" class="block text-sm font-medium text-gray-700 mb-2">
@@ -134,6 +162,28 @@
                                 value="{{ old('full_name', $user->full_name) }}" placeholder="e.g. Juan Pérez" required>
                         </div>
                         @error('full_name')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Job Title -->
+                    <div>
+                        <label for="job_title" class="block text-sm font-medium text-gray-700 mb-2">
+                            Cargo que tiene
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <input type="text" name="job_title" id="job_title"
+                                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('job_title') border-red-300 focus:ring-red-500 @enderror"
+                                value="{{ old('job_title', $user->apprenticeProfile?->job_title) }}" placeholder="e.g. Practicante, Pasante">
+                        </div>
+                        @error('job_title')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -234,12 +284,41 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-lg font-semibold text-gray-900">Información del Aprendiz</h2>
-                        <p class="text-sm text-gray-500">Detalles adicionales para usuarios aprendices</p>
+                        <h2 class="text-lg font-semibold text-gray-900">Información del Colaborador</h2>
+                        <p class="text-sm text-gray-500">Detalles adicionales para usuarios colaboradores</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Phase Selection -->
+                    <div>
+                        <label for="phase_id" class="block text-sm font-medium text-gray-700 mb-2">
+                            Fase del Colaborador <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                                    </path>
+                                </svg>
+                            </div>
+                            <select name="phase_id" id="phase_id"
+                                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('phase_id') border-red-300 focus:ring-red-500 @enderror">
+                                <option value="">Seleccione una fase</option>
+                                @foreach($phases as $phase)
+                                    <option value="{{ $phase->id }}" 
+                                        {{ (old('phase_id', $user->apprenticeProfile?->phase_id) == $phase->id) ? 'selected' : '' }}>
+                                        {{ $phase->name }} {{ $phase->is_active ? '(ACTUAL)' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('phase_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Document Number -->
                     <div>
                         <label for="document_number" class="block text-sm font-medium text-gray-700 mb-2">
@@ -259,6 +338,119 @@
                                 placeholder="e.g. 1234567890">
                         </div>
                         @error('document_number')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Personal Email -->
+                    <div>
+                        <label for="personal_email" class="block text-sm font-medium text-gray-700 mb-2">
+                            Correo Personal
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <input type="email" name="personal_email" id="personal_email"
+                                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('personal_email') border-red-300 focus:ring-red-500 @enderror"
+                                value="{{ old('personal_email', $user->apprenticeProfile?->personal_email) }}" placeholder="personal@example.com">
+                        </div>
+                        @error('personal_email')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Blood Type (RH) -->
+                    <div>
+                        <label for="blood_type" class="block text-sm font-medium text-gray-700 mb-2">
+                            RH (Tipo de Sangre)
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <input type="text" name="blood_type" id="blood_type"
+                                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('blood_type') border-red-300 focus:ring-red-500 @enderror"
+                                value="{{ old('blood_type', $user->apprenticeProfile?->blood_type) }}" placeholder="e.g. O+">
+                        </div>
+                        @error('blood_type')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Emergency Contact -->
+                    <div>
+                        <label for="emergency_contact" class="block text-sm font-medium text-gray-700 mb-2">
+                            Contacto de Emergencia
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <input type="text" name="emergency_contact" id="emergency_contact"
+                                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('emergency_contact') border-red-300 focus:ring-red-500 @enderror"
+                                value="{{ old('emergency_contact', $user->apprenticeProfile?->emergency_contact) }}" placeholder="Nombre y teléfono">
+                        </div>
+                        @error('emergency_contact')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Residence Address -->
+                    <div>
+                        <label for="residence_address" class="block text-sm font-medium text-gray-700 mb-2">
+                            Ubicación de Residencia
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                    </path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <input type="text" name="residence_address" id="residence_address"
+                                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('residence_address') border-red-300 focus:ring-red-500 @enderror"
+                                value="{{ old('residence_address', $user->apprenticeProfile?->residence_address) }}" placeholder="Dirección o barrio">
+                        </div>
+                        @error('residence_address')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+
+
+                    <!-- Technical Advisor -->
+                    <div>
+                        <label for="technical_advisor" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nombre del Asesor Técnico
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            </div>
+                            <input type="text" name="technical_advisor" id="technical_advisor"
+                                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('technical_advisor') border-red-300 focus:ring-red-500 @enderror"
+                                value="{{ old('technical_advisor', $user->apprenticeProfile?->technical_advisor) }}" placeholder="Nombre del asesor">
+                        </div>
+                        @error('technical_advisor')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -285,72 +477,60 @@
                         @enderror
                     </div>
 
-                    <!-- Cohort -->
+                    <!-- Technologist -->
                     <div>
-                        <label for="cohort" class="block text-sm font-medium text-gray-700 mb-2">
-                            Ficha (Cohort)
+                        <label for="technologist_id" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tecnólogo / Programa
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                                     </path>
                                 </svg>
                             </div>
-                            <input type="text" name="cohort" id="cohort"
-                                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('cohort') border-red-300 focus:ring-red-500 @enderror"
-                                value="{{ old('cohort', $user->apprenticeProfile?->cohort) }}"
-                                placeholder="e.g. ADSO-2024-1">
+                            <select name="technologist_id" id="technologist_id"
+                                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('technologist_id') border-red-300 focus:ring-red-500 @enderror">
+                                <option value="">Seleccione un tecnólogo</option>
+                                @foreach($phases as $phase)
+                                    <optgroup label="Fase: {{ $phase->name }}">
+                                        @foreach($phase->technologists as $tech)
+                                            <option value="{{ $tech->id }}" data-phase="{{ $phase->id }}" {{ old('technologist_id', $user->apprenticeProfile?->technologist_id) == $tech->id ? 'selected' : '' }}>
+                                                {{ $tech->name }} (Termina: {{ $tech->end_date ? $tech->end_date->format('d/m/Y') : 'Fin de fase' }})
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endforeach
+                            </select>
                         </div>
-                        @error('cohort')
+                        @error('technologist_id')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Start Date -->
+                    <!-- Fiche Number -->
                     <div>
-                        <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">
-                            Fecha de Inicio
+                        <label for="fiche_number" class="block text-sm font-medium text-gray-700 mb-2">
+                            Número de Ficha
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                                     </path>
                                 </svg>
                             </div>
-                            <input type="date" name="start_date" id="start_date"
-                                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('start_date') border-red-300 focus:ring-red-500 @enderror"
-                                value="{{ old('start_date', optional($user->apprenticeProfile?->start_date)->format('Y-m-d')) }}">
+                            <input type="text" name="fiche_number" id="fiche_number"
+                                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('fiche_number') border-red-300 focus:ring-red-500 @enderror"
+                                value="{{ old('fiche_number', $user->apprenticeProfile?->fiche_number) }}" placeholder="e.g. 2670687">
                         </div>
-                        @error('start_date')
+                        @error('fiche_number')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- End Date -->
-                    <div>
-                        <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">
-                            Fecha de Fin
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
-                                    </path>
-                                </svg>
-                            </div>
-                            <input type="date" name="end_date" id="end_date"
-                                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('end_date') border-red-300 focus:ring-red-500 @enderror"
-                                value="{{ old('end_date', optional($user->apprenticeProfile?->end_date)->format('Y-m-d')) }}">
-                        </div>
-                        @error('end_date')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
                 </div>
             </div>
 
@@ -379,19 +559,59 @@
         document.addEventListener('DOMContentLoaded', function () {
             const roleSelect = document.getElementById('role_id');
             const apprenticeFields = document.getElementById('apprentice-fields');
+            const phaseSelect = document.getElementById('phase_id');
+            const techSelect = document.getElementById('technologist_id');
+            const techOptions = Array.from(techSelect.querySelectorAll('option[data-phase]'));
+            const techGroups = Array.from(techSelect.querySelectorAll('optgroup'));
 
             function toggleApprenticeFields() {
-                const selectedRole = roleSelect.options[roleSelect.selectedIndex].text;
-                if (selectedRole === 'Aprendiz') {
+                const selectedRole = roleSelect.options[roleSelect.selectedIndex].text.trim();
+                // Check for both names to ensure compatibility
+                if (selectedRole === 'Colaborador' || selectedRole === 'Aprendiz') {
                     apprenticeFields.classList.remove('hidden');
                 } else {
                     apprenticeFields.classList.add('hidden');
                 }
             }
 
+            function filterTechnologists() {
+                const selectedPhase = phaseSelect.value;
+                
+                techGroups.forEach(group => {
+                    const groupPhaseId = techOptions.find(opt => opt.parentElement === group)?.dataset.phase;
+                    if (!selectedPhase || groupPhaseId === selectedPhase) {
+                        group.style.display = '';
+                    } else {
+                        group.style.display = 'none';
+                    }
+                });
+
+                // Clear tech selection if it belongs to a hidden phase
+                const selectedOption = techSelect.options[techSelect.selectedIndex];
+                if (selectedOption && selectedOption.dataset.phase && selectedOption.dataset.phase !== selectedPhase) {
+                    techSelect.value = '';
+                }
+            }
+
             roleSelect.addEventListener('change', toggleApprenticeFields);
+            phaseSelect.addEventListener('change', filterTechnologists);
+            
             toggleApprenticeFields(); // Execute on page load
+            filterTechnologists();
         });
+
+        function previewImage(input) {
+            const preview = document.getElementById('photo-preview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                    preview.classList.remove('bg-slate-100');
+                    preview.classList.add('border-sena');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
 
         // Toggle password visibility
         function togglePasswordVisibility(inputId, iconId) {

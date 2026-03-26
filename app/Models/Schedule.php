@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Schedule extends Model
 {
     protected $fillable = [
+        'technologist_id',
         'apprentice_id',
         'weekday',
         'start_time',
@@ -20,6 +21,11 @@ class Schedule extends Model
         'start_time' => 'datetime:H:i',
         'end_time' => 'datetime:H:i'
     ];
+
+    public function technologist(): BelongsTo
+    {
+        return $this->belongsTo(Technologist::class);
+    }
 
     public function apprentice(): BelongsTo
     {

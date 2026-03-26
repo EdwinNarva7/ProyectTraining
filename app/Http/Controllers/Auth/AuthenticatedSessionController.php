@@ -40,6 +40,8 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended(route('apprentice.dashboard', absolute: false));
         } elseif ($user->isAdmin()) {
             return redirect()->intended(route('admin.dashboard', absolute: false));
+        } elseif ($user->isGerente()) {
+            return redirect()->intended(route('gerente.dashboard', absolute: false));
         }
 
         return redirect()->intended(route('dashboard', absolute: false));
