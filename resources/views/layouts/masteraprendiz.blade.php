@@ -9,6 +9,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>SIEAP Aprendiz - @yield('title', 'Dashboard')</title>
+    <link rel="icon" type="image/jpeg" href="/assets/img/SenaEmpresa.jpg">
 
     <!-- Google Fonts: Inter & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -203,8 +204,8 @@
                 <!-- Logo -->
                 <a class="flex items-center gap-3 truncate group" href="{{ route('apprentice.dashboard') }}">
                     <div
-                        class="w-10 h-10 sena-gradient rounded-xl flex items-center justify-center shadow-lg shadow-sena/20 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shrink-0">
-                        <i class="fas fa-graduation-cap text-white text-lg"></i>
+                        class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-sena/20 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shrink-0 overflow-hidden">
+                        <img src="/assets/img/SenaEmpresa.jpg" alt="Logo SENA Empresa" class="w-[85%] h-[85%] object-contain">
                     </div>
                     <div>
                         <span
