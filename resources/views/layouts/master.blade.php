@@ -618,12 +618,7 @@
                                     <i class="fas fa-book opacity-50 text-base"></i>
                                     Manual Usuario
                                 </a>
-                                <div class="my-1 border-t border-slate-50"></div>
-                                <a href="{{ asset('docs/Plantilla del Manual Tecnico.pdf') }}" target="_blank"
-                                    class="flex items-center gap-3 px-3 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-sena rounded-lg transition-all">
-                                    <i class="fas fa-file-code opacity-50 text-base"></i>
-                                    Manual Técnico
-                                </a>
+
                             </div>
                         </div>
 

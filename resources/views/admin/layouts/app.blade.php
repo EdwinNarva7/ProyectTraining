@@ -40,10 +40,7 @@
                         <a href="{{ asset('docs/Plantilla Manual Usuario Sistema.pdf') }}" target="_blank" class="dropdown-item">
                             <i class="fas fa-book mr-2"></i> Manual Usuario
                         </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="{{ asset('docs/Plantilla del Manual Tecnico.pdf') }}" target="_blank" class="dropdown-item">
-                            <i class="fas fa-file-code mr-2"></i> Manual Técnico
-                        </a>
+
                     </div>
                 </li>
 
