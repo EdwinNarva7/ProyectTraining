@@ -90,16 +90,20 @@ class AttendanceController extends Controller
         $absent = [];
         $rates = [];
 
+        $weekData = AttendanceLog::where('event_type', 'entrada')
+            ->where('occurred_at', '>=', Carbon::today()->subDays(6))
+            ->select(DB::raw('DATE(occurred_at) as date'), DB::raw('COUNT(DISTINCT apprentice_id) as present_count'))
+            ->groupBy('date')
+            ->get()
+            ->pluck('present_count', 'date');
+
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
+            $dateString = $date->toDateString();
             $weekday = $date->dayOfWeek === 0 ? 7 : $date->dayOfWeek;
             $labels[] = $weekdays[$weekday] ?? $date->format('D');
 
-            $presentCount = AttendanceLog::where('event_type', 'entrada')
-                ->whereDate('occurred_at', $date)
-                ->distinct('apprentice_id')
-                ->count('apprentice_id');
-
+            $presentCount = $weekData[$dateString] ?? 0;
             $absentCount = max(0, $totalApprentices - $presentCount);
             $rate = $totalApprentices > 0 ? round(($presentCount / $totalApprentices) * 100, 1) : 0;
 
